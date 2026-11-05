@@ -1,0 +1,182 @@
+
+  <section class="doc" id="v-aktuator" hidden aria-label="Motor dan sendi">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Motor per sendi</p>
+        <h2>Motor cepat, sendi kuat: <span>semua aktuator menukar kecepatan dengan tenaga</span></h2>
+        <p class="lede">Motor listrik paling efisien saat berputar ribuan rpm dengan torsi kecil. Sendi robot butuh kebalikannya: pelan, dengan torsi besar. Setiap aktuator Optimus adalah motor magnet permanen (PMSM, magnet NdFeB) ditambah mekanisme reduksi. Bedanya hanya di mekanisme itu.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Lab aktuator</h3>
+        <div class="chips" id="labFam" role="group" aria-label="Jenis aktuator">
+          <button class="chip acc" data-fam="rotary">Rotari · strain wave</button>
+          <button class="chip acc" data-fam="linear">Linear · roller screw</button>
+          <button class="chip acc" data-fam="finger">Jari · worm + tendon</button>
+        </div>
+        <div class="box lab" style="padding:0">
+          <canvas id="labCv" aria-label="Animasi aktuator"></canvas>
+          <div class="ctl">
+            <label class="rng" for="lT"><span id="lTl">Torsi motor</span><output id="lTo"></output><input type="range" id="lT"></label>
+            <label class="rng" for="lS"><span>Kecepatan motor</span><output id="lSo"></output><input type="range" id="lS" min="500" max="6000" step="100" value="3000"></label>
+            <label class="rng" for="lR"><span id="lRl">Rasio</span><output id="lRo"></output><input type="range" id="lR"></label>
+            <dl class="outs">
+              <div><dt id="oAl">Torsi output</dt><dd id="oA"></dd></div>
+              <div><dt id="oBl">Kecepatan output</dt><dd id="oB"></dd></div>
+              <div><dt>Daya mekanis</dt><dd id="oC"></dd></div>
+              <div><dt>Efisiensi asumsi</dt><dd id="oD"></dd></div>
+            </dl>
+            <p class="formula" id="lF"></p>
+          </div>
+        </div>
+        <ol class="olist" id="labSteps"></ol>
+      </section>
+
+      <section class="sec">
+        <h3>Enam desain aktuator yang dipakai ulang di seluruh tubuh</h3>
+        <p class="sub">Di AI Day 2022 Tesla menunjukkan 28 aktuator struktural yang dibangun hanya dari enam desain. Memakai ulang desain menekan biaya cetakan, pengujian, dan suku cadang.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Jenis</th><th>Kelas</th><th>Massa</th><th>Kepadatan</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Rotari</td><td class="n">20 Nm</td><td class="n">0,55 kg</td><td class="n">36 Nm/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Rotari</td><td class="n">110 Nm</td><td class="n">1,62 kg</td><td class="n">68 Nm/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Rotari</td><td class="n">180 Nm</td><td class="n">2,26 kg</td><td class="n">80 Nm/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Linear</td><td class="n">500 N</td><td class="n">0,36 kg</td><td class="n">1.389 N/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Linear</td><td class="n">3.900 N</td><td class="n">0,93 kg</td><td class="n">4.194 N/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Linear</td><td class="n">8.000 N</td><td class="n">2,2 kg</td><td class="n">3.636 N/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Peta sendi: aktuator apa di mana</h3>
+        <p class="sub">Tesla hanya merilis total dan enam kelasnya. Pembagian per sendi di bawah berasal dari analisis rantai pasok (14 rotari + 14 linear), dan kelas per sendi adalah inferensi dari beban yang masuk akal.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Sendi</th><th>DOF</th><th>Aktuator</th><th>Kelas (inferensi)</th><th>Kenapa jenis ini</th></tr></thead>
+          <tbody>
+            <tr><td>Leher</td><td class="n">2</td><td>Rotari kecil <span class="cf cf-I">Inferensi</span></td><td class="n">&lt; 20 Nm</td><td>Ditambahkan di Gen 2; beban hanya kepala.</td></tr>
+            <tr><td>Bahu</td><td class="n">3 × 2</td><td>3 rotari <span class="cf cf-L">Laporan</span></td><td class="n">110–180 Nm</td><td>Rentang gerak lebar, tiga sumbu bertumpuk seperti sendi bola.</td></tr>
+            <tr><td>Siku</td><td class="n">1 × 2</td><td>1 linear <span class="cf cf-L">Laporan</span></td><td class="n">3.900 N</td><td>Mendorong tuas seperti otot bisep; motor di lengan atas.</td></tr>
+            <tr><td>Pergelangan</td><td class="n">3 × 2</td><td>1 rotari + 2 linear <span class="cf cf-L">Laporan</span></td><td class="n">20 Nm · 500 N</td><td>Motor dipindah ke lengan bawah agar ujung lengan ringan.</td></tr>
+            <tr><td>Tangan</td><td class="n">11 × 2</td><td>6 motor mini + worm + tendon <span class="cf cf-R">Resmi</span></td><td class="n">tas 9 kg</td><td>Genggaman terkunci tanpa arus (worm tidak bisa diputar balik).</td></tr>
+            <tr><td>Torso</td><td class="n">2</td><td>2 rotari <span class="cf cf-L">Laporan</span></td><td class="n">180 Nm</td><td>Menahan badan atas plus beban di tangan.</td></tr>
+            <tr><td>Pinggul</td><td class="n">3 × 2</td><td>2 rotari + 1 linear <span class="cf cf-L">Laporan</span></td><td class="n">180 Nm · 8.000 N</td><td>Pitch butuh tenaga terbesar saat melangkah dan jongkok.</td></tr>
+            <tr><td>Lutut</td><td class="n">1 × 2</td><td>1 linear + four-bar <span class="cf cf-R">Resmi</span></td><td class="n">8.000 N</td><td>Linkage memperbesar lengan momen saat lutut menekuk dalam.</td></tr>
+            <tr><td>Pergelangan kaki</td><td class="n">2 × 2</td><td>2 linear paralel <span class="cf cf-L">Laporan</span></td><td class="n">3.900 N</td><td>Motor di betis mengurangi massa ayun kaki.</td></tr>
+          </tbody>
+          <tfoot><tr><td>Total</td><td class="n" colspan="4">28 aktuator struktural (14 rotari + 14 linear) + 12 aktuator tangan; Gen 2 menambah 2 di leher</td></tr></tfoot>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Bagaimana driver memutar motor: Field-Oriented Control</h3>
+        <div class="grid2">
+          <div class="box" style="padding:0"><canvas id="focCv" style="display:block;width:100%;height:260px" aria-label="Animasi arus 3-fasa dan vektor medan"></canvas></div>
+          <ol class="olist">
+            <li>Encoder membaca sudut rotor θ, puluhan ribu kali per detik.</li>
+            <li>Sensor arus mengukur dua fasa; fasa ketiga dihitung karena jumlah ketiganya nol.</li>
+            <li>Transformasi Clarke lalu Park memutar arus 3-fasa ke kerangka rotor: <b>I<sub>d</sub></b> (searah magnet, membuat fluks) dan <b>I<sub>q</sub></b> (tegak lurus magnet, membuat torsi).</li>
+            <li>Dua kontroler PI menahan I<sub>q</sub> = target torsi dan I<sub>d</sub> ≈ 0. Torsi motor ≈ k<sub>t</sub> × I<sub>q</sub>.</li>
+            <li>Hasilnya diubah balik menjadi tiga tegangan dan dipotong-potong oleh 6 transistor (PWM) pada 20–40 kHz <span class="cf cf-I">Inferensi</span>.</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-elektronik" hidden aria-label="Elektronik">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Spesifikasi elektronik</p>
+        <h2>Satu baterai 52 V, empat puluhan aktuator, <span>satu komputer pusat</span></h2>
+        <p class="lede">Baterai di dada membagi daya ke tiap anggota tubuh. Setiap aktuator punya driver sendiri di dekat motornya, sehingga kabel daya cukup satu jalur 52 V per anggota tubuh, dan perintah datang lewat bus data.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Arsitektur daya &amp; data</h3>
+        <div class="keyrow"><span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" class="p52"/></svg> Daya 52 V</span><span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" class="plv"/></svg> Tegangan rendah 12/5 V</span><span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" class="dat"/></svg> Data</span><span>Topologi bus: <span class="cf cf-I">Inferensi</span></span></div>
+        <div class="svgwrap">
+          <svg viewBox="0 0 960 440" role="img" aria-label="Diagram distribusi daya dan data">
+            <path class="p52" d="M180 220 H220"/>
+            <path class="p52" d="M340 220 H380 M380 50 V390"/>
+            <g class="p52"><path d="M380 50 H420"/><path d="M380 105 H420"/><path d="M380 160 H420"/><path d="M380 215 H420"/><path d="M380 270 H420"/><path d="M380 325 H420"/><path d="M380 380 H420"/></g>
+            <path class="plv" d="M280 270 V330"/>
+            <path class="plv" d="M340 360 H360 V420 H690 V205 H700 M690 335 H700"/>
+            <path class="dat" d="M620 50 H660 M620 105 H660 M620 160 H660 M620 215 H660 M620 270 H660 M620 325 H660 M620 380 H660 M660 50 V380 M660 190 H700"/>
+            <rect class="blk hi" x="30" y="160" width="150" height="120" rx="3"/>
+            <text x="44" y="188" font-weight="600" font-size="17">Baterai</text>
+            <text x="44" y="210" class="tm" font-size="12">2,3 kWh · 52 V</text>
+            <text x="44" y="230" class="tm t2" font-size="11">≈ 14 sel seri</text>
+            <text x="44" y="262" class="t3" font-size="10.5">di dalam torso</text>
+            <rect class="blk" x="220" y="170" width="120" height="100" rx="3"/>
+            <text x="232" y="196" font-weight="600" font-size="15">BMS</text>
+            <text x="232" y="216" class="t2" font-size="11.5">kontaktor, sekring</text>
+            <text x="232" y="232" class="t2" font-size="11.5">SOC, suhu sel</text>
+            <rect class="blk" x="220" y="330" width="120" height="60" rx="3"/>
+            <text x="232" y="355" font-weight="600" font-size="14">DC-DC</text>
+            <text x="232" y="374" class="tm t2" font-size="11">52 V → 12/5 V</text>
+            <g font-size="12.5">
+              <rect class="blk" x="420" y="32" width="200" height="36" rx="3"/><text x="432" y="55">Leher · 2 aktuator</text>
+              <rect class="blk" x="420" y="87" width="200" height="36" rx="3"/><text x="432" y="110">Lengan kiri · 7 aktuator</text>
+              <rect class="blk" x="420" y="142" width="200" height="36" rx="3"/><text x="432" y="165">Lengan kanan · 7 aktuator</text>
+              <rect class="blk" x="420" y="197" width="200" height="36" rx="3"/><text x="432" y="220">Tangan · 2 × 6 motor mini</text>
+              <rect class="blk" x="420" y="252" width="200" height="36" rx="3"/><text x="432" y="275">Torso · 2 aktuator</text>
+              <rect class="blk" x="420" y="307" width="200" height="36" rx="3"/><text x="432" y="330">Kaki kiri · 6 aktuator</text>
+              <rect class="blk" x="420" y="362" width="200" height="36" rx="3"/><text x="432" y="385">Kaki kanan · 6 aktuator</text>
+            </g>
+            <text x="420" y="22" class="t3" font-size="10.5">tiap aktuator: driver FOC + encoder + sensor gaya</text>
+            <rect class="blk hi" x="700" y="140" width="230" height="110" rx="3"/>
+            <text x="714" y="166" font-weight="600" font-size="16">Komputer pusat</text>
+            <text x="714" y="187" class="tm" font-size="11.5">Tesla SoC (garis FSD)</text>
+            <text x="714" y="206" class="t2" font-size="11.5">Wi-Fi · LTE · audio</text>
+            <text x="714" y="236" class="t3" font-size="10.5">kebijakan AI + kontrol tubuh</text>
+            <rect class="blk" x="700" y="300" width="230" height="70" rx="3"/>
+            <text x="714" y="325" font-weight="600" font-size="14">Sensor pusat</text>
+            <text x="714" y="346" class="t2" font-size="11.5">kamera · IMU · mikrofon</text>
+            <path class="dat" d="M815 250 V300"/>
+          </svg>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h3>Spesifikasi daya</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Parameter</th><th>Nilai</th><th>Status</th><th>Catatan</th></tr></thead>
+          <tbody>
+            <tr><td>Energi baterai</td><td class="n">2,3 kWh</td><td><span class="cf cf-R">Resmi</span></td><td>AI Day 2022, paket terintegrasi di torso.</td></tr>
+            <tr><td>Tegangan sistem</td><td class="n">52 V</td><td><span class="cf cf-R">Resmi</span></td><td>Di bawah batas tegangan sentuh aman ± 60 V DC, jadi tidak perlu isolasi kelas tegangan tinggi.</td></tr>
+            <tr><td>Konfigurasi sel</td><td class="n">≈ 14s</td><td><span class="cf cf-I">Inferensi</span></td><td>52 V ÷ 3,7 V per sel Li-ion ≈ 14 sel seri.</td></tr>
+            <tr><td>Kapasitas muatan</td><td class="n">≈ 44 Ah</td><td><span class="cf cf-I">Inferensi</span></td><td>2.300 Wh ÷ 52 V.</td></tr>
+            <tr><td>Daya duduk diam</td><td class="n">≈ 100 W</td><td><span class="cf cf-R">Resmi</span></td><td>Sebagian besar untuk komputer dan elektronik.</td></tr>
+            <tr><td>Daya jalan cepat</td><td class="n">≈ 500 W</td><td><span class="cf cf-R">Resmi</span></td><td>Arus rata-rata ≈ 10 A dari 52 V.</td></tr>
+            <tr><td>Driver motor</td><td>Inverter 3-fasa lokal per aktuator</td><td><span class="cf cf-I">Inferensi</span></td><td>MOSFET atau GaN kelas 80–100 V, FOC.</td></tr>
+            <tr><td>Harness</td><td>Elektronik &amp; kabel terintegrasi (Gen 2)</td><td><span class="cf cf-R">Resmi</span></td><td>Mengurangi konektor, titik rawan putus.</td></tr>
+            <tr><td>Bus data</td><td>Tidak dirilis</td><td><span class="cf cf-I">Inferensi</span></td><td>Humanoid lain umumnya memakai EtherCAT atau CAN-FD.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Anggaran daya per aktivitas</h3>
+        <p class="sub">Batang penuh = angka resmi Tesla. Batang arsir = estimasi untuk perbandingan. Waktu kerja = 2.300 Wh × 0,9 (energi terpakai, inferensi) ÷ daya.</p>
+        <div class="pbars" id="pbars"></div>
+      </section>
+
+      <section class="sec">
+        <h3>Inventaris sensor</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Sensor</th><th>Jumlah</th><th>Lokasi</th><th>Fungsi</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Kamera</td><td>Tidak dirilis</td><td>Kepala</td><td>Persepsi visual, tanpa LiDAR</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Mikrofon &amp; speaker</td><td>Tidak dirilis</td><td>Kepala/torso</td><td>Perintah suara, respons</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Encoder posisi</td><td>≈ 2 per aktuator</td><td>Sisi motor &amp; sisi output</td><td>Sudut rotor untuk FOC, sudut sendi untuk kontrol</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Sensor gaya/torsi aktuator</td><td>≈ 1 per aktuator</td><td>Output aktuator</td><td>Kontrol gaya, deteksi tabrakan</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Gaya/torsi kaki</td><td>1 per kaki</td><td>Telapak</td><td>Center of pressure, deteksi kontak</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Taktil jari</td><td>Semua ujung jari</td><td>Tangan</td><td>Tekanan genggam (memegang telur)</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>IMU</td><td>≥ 1</td><td>Torso</td><td>Orientasi &amp; percepatan untuk keseimbangan</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+            <tr><td>Suhu</td><td>Banyak</td><td>Motor, driver, sel</td><td>Proteksi termal</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+    </div>
+  </section>

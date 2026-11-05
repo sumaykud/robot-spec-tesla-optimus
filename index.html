@@ -1,0 +1,1996 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Anatomi Optimus</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  /* Layout: tab bar on top. "Anatomi" = full-bleed 3D x-ray bench, instrument columns at the edges, control chain along the bottom. Other tabs = scrolling reference sheets. */
+  --bg:#e7e9ec; --panel:rgba(249,250,251,.9); --panel-solid:#f9fafb; --ink:#111418; --ink-2:#535b67; --ink-3:#8a929e; --line:#d2d7dd;
+  --accent:#d8142a; --rot:#7656f0; --lin:#1d74dc; --fin:#18935a; --sen:#a87400; --pwr:#ec6a1e; --sig:#3b4452; --hot:#df3f2c; --metal:#5d646e;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0e1013;--panel:rgba(21,24,29,.88);--panel-solid:#15181d;--ink:#e9ecf1;--ink-2:#a4acb8;--ink-3:#6b7380;--line:#2b3038;--accent:#ff3b4d;--rot:#9b84ff;--lin:#4f9dff;--fin:#36c47c;--sen:#e0b040;--pwr:#ff7a30;--sig:#b9c1cd;--hot:#ff6552;--metal:#8c939d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1013;--panel:rgba(21,24,29,.88);--panel-solid:#15181d;--ink:#e9ecf1;--ink-2:#a4acb8;--ink-3:#6b7380;--line:#2b3038;--accent:#ff3b4d;--rot:#9b84ff;--lin:#4f9dff;--fin:#36c47c;--sen:#e0b040;--pwr:#ff7a30;--sig:#b9c1cd;--hot:#ff6552;--metal:#8c939d;color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--f-body);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font:600 10.5px/1.25 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0}
+
+/* confidence badges: encoded by form, not colour */
+.cf{display:inline-block;font:600 9px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:3px 5px 3px;border-radius:2px;white-space:nowrap;vertical-align:1px}
+.cf-R{background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
+.cf-L{border:1px solid var(--ink-2);color:var(--ink)}
+.cf-I{border:1px dashed var(--ink-3);color:var(--ink-2);font-style:italic}
+
+.app{height:100%;display:flex;flex-direction:column}
+.top{flex:0 0 auto;display:flex;align-items:center;gap:22px;min-height:54px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--panel-solid);border-bottom:1px solid var(--line);position:relative;z-index:6}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.brand .rule{width:4px;height:30px;background:var(--accent)}
+.brand h1{font:600 24px/1 var(--f-display);margin:0;letter-spacing:.005em}
+.brand h1 span{color:var(--accent)}
+.brand p{margin:3px 0 0;font:500 10px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;min-width:0;align-self:stretch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:0 12px;font:600 11px/1 var(--f-body);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);cursor:pointer;white-space:nowrap;box-shadow:inset 0 -2px 0 transparent}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.top .disc{margin-left:auto;font:500 10px/1.3 var(--f-mono);color:var(--ink-3);text-align:right;flex:0 1 auto;letter-spacing:.03em}
+main{flex:1 1 auto;position:relative;min-height:0}
+
+/* ===== Anatomi ===== */
+.anat{position:absolute;inset:0;overflow:hidden}
+#stage{position:absolute;inset:0;touch-action:none;cursor:grab;overflow:hidden}
+#stage.pick{cursor:pointer}
+#stage canvas{display:block;width:100%;height:100%;outline:none}
+#leaders{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#leaders polyline{fill:none;stroke:var(--ink-2);stroke-width:1}
+#leaders circle{fill:var(--bg);stroke:var(--ink);stroke-width:1.2}
+#leaders .sel polyline{stroke:var(--accent)}
+#leaders .sel circle{stroke:var(--accent);fill:var(--accent)}
+#tags{position:absolute;inset:0;pointer-events:none}
+.tag{position:absolute;left:0;top:0;pointer-events:auto;background:none;border:0;padding:2px 3px;font:600 12.5px/1.1 var(--f-body);color:var(--ink);white-space:nowrap;cursor:pointer;text-align:left;text-shadow:0 0 5px var(--bg),0 0 2px var(--bg),0 0 1px var(--bg)}
+.tag small{display:block;margin-top:2px;font:500 9.5px/1.2 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.tag.r{text-align:right}
+.tag .ns{display:none}
+.tag.sel{color:var(--accent)}
+.tag.hov{text-decoration:underline;text-underline-offset:3px}
+.tag:focus-visible{outline:2px solid var(--accent)}
+.legend{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:14px;font:600 10px/1 var(--f-body);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2);pointer-events:none;white-space:nowrap;z-index:1}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:3px;background:var(--c)}
+.legend i.dash{height:2px;background:repeating-linear-gradient(90deg,var(--c) 0 3px,transparent 3px 6px)}
+#loader{position:absolute;left:50%;top:44px;transform:translateX(-50%);font:500 11px/1 var(--f-mono);letter-spacing:.05em;color:var(--ink-2);background:var(--panel);border:1px solid var(--line);padding:7px 10px;z-index:2;display:flex;gap:10px;align-items:center}
+#loader b{display:block;width:90px;height:2px;background:var(--line);position:relative}
+#loader b i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent)}
+
+.col{position:absolute;top:12px;bottom:12px;display:flex;flex-direction:column;gap:10px;pointer-events:none;z-index:2}
+.col>*{pointer-events:auto}
+.col-left{left:max(16px,env(safe-area-inset-left,0px));width:292px}
+.col-right{right:max(16px,env(safe-area-inset-right,0px));width:360px}
+.card{background:var(--panel);border:1px solid var(--line);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+
+.readout{padding:11px 14px 12px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:end}
+.readout .chips{grid-column:1/-1;margin-bottom:8px}
+.big{font:700 54px/.86 var(--f-display);color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.big small{font:600 15px/1 var(--f-display);color:var(--ink-2);margin-left:4px;letter-spacing:.04em}
+#spark{width:110px;height:44px;display:block}
+.plabel{grid-column:1/-1;margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.plabel .mono{font-size:9.5px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+.stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px 6px;margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line)}
+.stats div{min-width:0}
+.stats dt{font:600 9.5px/1.2 var(--f-body);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.stats dd{margin:2px 0 0;font:500 11px/1.1 var(--f-mono);color:var(--ink-2);white-space:nowrap}
+.stats dd b{font:600 19px/1 var(--f-display);color:var(--ink);font-variant-numeric:tabular-nums}
+
+.parts{flex:1 1 auto;min-height:120px;overflow:auto;padding:4px 0 8px}
+.parts h3{margin:10px 14px 3px}
+.part{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:9px;width:100%;padding:5px 14px;border:0;background:none;text-align:left;cursor:pointer;color:var(--ink)}
+.part .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.part .nm{font:500 14px/1.2 var(--f-body);min-width:0}
+.part .lv{font:400 10.5px/1 var(--f-mono);color:var(--ink-3);white-space:nowrap}
+.part:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.part[aria-current="true"]{box-shadow:inset 3px 0 0 var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.part[aria-current="true"] .nm{color:var(--accent);font-weight:600}
+.part:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{border:1px solid var(--line);background:var(--panel-solid);padding:6px 8px;font:600 10.5px/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);cursor:pointer;border-radius:2px}
+.chip:hover{color:var(--ink);border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip.acc[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip:focus-visible,.btn:focus-visible,.node:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.detail{flex:1 1 auto;min-height:0;overflow:auto;padding:14px 16px 16px}
+.d-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.dom{display:inline-flex;align-items:center;gap:6px;font:500 10px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);text-align:right}
+.dom i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:0 0 auto}
+.detail h2{font:600 30px/1 var(--f-display);margin:8px 0 3px;text-wrap:balance}
+.d-en{margin:0;font:500 10.5px/1.3 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.d-role{margin:10px 0 0;font-size:14.5px;line-height:1.45}
+.chart{margin:12px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+.chart-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.chart-head .mono{font-size:10px;color:var(--ink-3);text-align:right}
+#chart{display:block;width:100%;height:178px;margin-top:6px}
+.cap{margin:6px 0 0;font-size:12.5px;line-height:1.4;color:var(--ink-2)}
+.detail h3{margin:16px 0 6px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:20px 1fr;gap:6px;font-size:13.5px;line-height:1.45}
+.steps li::before{content:counter(s);font:600 11px/20px var(--f-mono);color:var(--accent);text-align:center;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);height:20px;border-radius:50%}
+.specs{margin:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr) auto;gap:0}
+.specs>*{padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;min-width:0}
+.specs dt{color:var(--ink-2);padding-right:10px}
+.specs dd{margin:0;font:500 11.5px/1.4 var(--f-mono);text-align:right;padding-right:8px}
+.specs .c{text-align:right}
+.ind{display:grid;gap:8px}
+.ind div{padding:9px 11px;font-size:13px;line-height:1.45;background:color-mix(in srgb,var(--ink) 5%,transparent);border-left:2px solid var(--ink-3)}
+.ind div.dev{border-left-color:var(--fin)}
+.ind b{display:block;font:600 9.5px/1.2 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:3px}
+.links{display:flex;flex-wrap:wrap;gap:4px}
+.keyline{margin:14px 0 0;display:flex;flex-wrap:wrap;gap:6px 10px;font-size:11.5px;color:var(--ink-2);align-items:center}
+
+.view{padding:11px 14px;display:flex;flex-direction:column;gap:7px}
+.view .eyebrow{margin-bottom:-2px}
+.credit{font:400 10.5px/1.4 var(--f-body);color:var(--ink-3);margin:0;padding:0 2px}
+.credit a{color:var(--ink-2)}
+
+.flowbar{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:2;text-align:center;width:calc(100% - 720px);max-width:820px;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
+.flowbar>*{pointer-events:auto}
+.fhead{font:600 10.5px/1.2 var(--f-body);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);margin:0}
+.fhead em{font-style:normal;color:var(--ink-3)}
+.chain{display:flex;align-items:flex-start;overflow-x:auto;max-width:100%;padding:4px 2px 2px;scrollbar-width:thin}
+.node{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;cursor:pointer;padding:0 1px;width:66px;flex:0 0 auto}
+.node .n{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink-3);display:grid;place-items:center;font:600 10.5px/1 var(--f-mono);background:var(--panel-solid);color:var(--ink-2)}
+.node .t{font:600 9.5px/1.15 var(--f-body);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.node .v{font:400 9px/1 var(--f-mono);color:var(--ink-3);white-space:nowrap}
+.node.pulse .n{border-color:var(--accent);color:var(--ink)}
+.node.sel .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.node.sel .t{color:var(--accent)}
+.arr{flex:0 0 auto;width:12px;height:28px;display:grid;place-items:center;color:var(--ink-3);font:600 12px/1 var(--f-mono);margin:0 -5px}
+#chainCap{margin:0;max-width:640px;font-size:12.5px;line-height:1.4;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:6px 10px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.hint{font:500 9.5px/1 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:0}
+.anat.ui-off .col,.anat.ui-off .flowbar,.anat.ui-off .legend{opacity:0;pointer-events:none}
+.anat.ui-off .col>*,.anat.ui-off .flowbar>*{pointer-events:none}
+.col,.flowbar,.legend{transition:opacity .25s}
+
+/* ===== Reference sheets ===== */
+.doc{position:absolute;inset:0;overflow:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:30px 72px}
+.doc-in{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+.dh{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.dh h2{font:600 40px/1 var(--f-display);margin:0;text-wrap:balance}
+.dh h2 span{color:var(--accent)}
+.lede{margin:0;font-size:16px;line-height:1.55;color:var(--ink-2);max-width:68ch}
+.sec{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec>h3{font:600 24px/1.05 var(--f-display);margin:0;text-wrap:balance}
+.sec>p{margin:0;max-width:72ch;line-height:1.55}
+.sec .sub{color:var(--ink-2);font-size:13.5px}
+.box{background:var(--panel-solid);border:1px solid var(--line);padding:16px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tbl{overflow-x:auto;border:1px solid var(--line);background:var(--panel-solid)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{font:600 10px/1.2 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:color-mix(in srgb,var(--ink) 4%,transparent)}
+td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4}
+tr:last-child td{border-bottom:0}
+td.n{font:500 12.5px/1.4 var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600}
+.lab{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:0}
+.lab canvas{display:block;width:100%;height:320px;border-right:1px solid var(--line)}
+.lab .ctl{padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.rng{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center}
+.rng span{font:600 10.5px/1.2 var(--f-body);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2)}
+.rng output{font:500 11.5px/1 var(--f-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.rng input{grid-column:1/-1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-5px;background:var(--accent);border:0;border-radius:0}
+input[type=range]::-moz-range-track{height:2px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--accent);border:0;border-radius:0}
+input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.outs{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.outs dt{font:600 9.5px/1.2 var(--f-body);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.outs dd{margin:3px 0 0;font:600 24px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.outs dd small{font:500 11px/1 var(--f-mono);color:var(--ink-2);margin-left:3px}
+.formula{font:500 12px/1.5 var(--f-mono);color:var(--ink-2);margin:0;overflow-wrap:anywhere}
+.olist{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:9px}
+.olist li{counter-increment:s;display:grid;grid-template-columns:22px 1fr;gap:8px;line-height:1.5}
+.olist li::before{content:counter(s);font:600 11px/22px var(--f-mono);color:var(--accent);text-align:center;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);height:22px;border-radius:50%}
+.svgwrap{overflow-x:auto;border:1px solid var(--line);background:var(--panel-solid)}
+.svgwrap svg{display:block;min-width:760px;width:100%;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .t2{fill:var(--ink-2)} svg .t3{fill:var(--ink-3)} svg .tm{font-family:var(--f-mono)}
+svg .blk{fill:var(--panel-solid);stroke:var(--ink-3);stroke-width:1}
+svg .blk.hi{stroke:var(--ink);stroke-width:1.5}
+svg .p52{stroke:var(--pwr);stroke-width:3;fill:none}
+svg .plv{stroke:var(--ink-2);stroke-width:1.5;fill:none}
+svg .dat{stroke:var(--sig);stroke-width:1.5;stroke-dasharray:5 4;fill:none}
+svg .die{fill:color-mix(in srgb,var(--ink) 4%,transparent);stroke:var(--ink-2);stroke-width:1.5}
+svg .npu{fill:color-mix(in srgb,var(--accent) 12%,var(--panel-solid));stroke:var(--accent)}
+svg .cpu{fill:color-mix(in srgb,var(--lin) 12%,var(--panel-solid));stroke:var(--lin)}
+svg .oth{fill:var(--panel-solid);stroke:var(--ink-3)}
+.stack{display:flex;flex-direction:column;gap:4px}
+.layer{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:14px;align-items:start;padding:12px 14px;background:var(--panel-solid);border:1px solid var(--line);border-left:4px solid var(--c,var(--ink-3))}
+.layer h4{margin:0;font:600 17px/1.1 var(--f-display)}
+.layer h4 small{display:block;font:500 9.5px/1.3 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+.layer p{margin:0;font-size:13.5px;line-height:1.5;min-width:0}
+.rates{display:flex;flex-direction:column;gap:6px}
+.rate{display:grid;grid-template-columns:210px minmax(0,1fr) 120px;gap:12px;align-items:center;font-size:13px}
+.rate .bar{position:relative;height:16px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 20%)}
+.rate .bar i{position:absolute;top:3px;bottom:3px;background:var(--c,var(--accent));border-radius:1px}
+.rate .v{font:500 11.5px/1.2 var(--f-mono);color:var(--ink-2);text-align:right}
+.rate.axis{font:500 10px/1 var(--f-mono);color:var(--ink-3)}
+.rate.axis .ticks{display:flex;justify-content:space-between}
+.pbars{display:flex;flex-direction:column;gap:8px}
+.pbar{display:grid;grid-template-columns:130px minmax(0,1fr) 110px;gap:12px;align-items:center;font-size:13px}
+.pbar .bar{height:18px;background:color-mix(in srgb,var(--ink) 6%,transparent);position:relative}
+.pbar .bar i{position:absolute;inset:0 auto 0 0;background:var(--pwr)}
+.pbar .bar i.est{background:repeating-linear-gradient(135deg,var(--pwr) 0 5px,color-mix(in srgb,var(--pwr) 45%,transparent) 5px 9px)}
+.pbar .v{font:500 11.5px/1.3 var(--f-mono);color:var(--ink-2)}
+.tl{display:flex;flex-direction:column;border-left:2px solid var(--line);margin-left:6px}
+.tl li{list-style:none;display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;padding:0 0 14px 16px;position:relative;line-height:1.5}
+.tl li::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--panel-solid);border:2px solid var(--ink-3)}
+.tl li.now::before{border-color:var(--accent);background:var(--accent)}
+.tl time{font:500 12px/1.5 var(--f-mono);color:var(--ink-2)}
+.tl ul{padding:0;margin:0}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ccard{background:var(--panel-solid);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ccard header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ccard h4{margin:0;font:600 21px/1.05 var(--f-display)}
+.ccard .key{font:500 12px/1.45 var(--f-mono);color:var(--ink);background:color-mix(in srgb,var(--ink) 5%,transparent);padding:7px 9px}
+.ccard p{margin:0;font-size:13.5px;line-height:1.5}
+.ccard p b{font:600 9.5px/1.2 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);display:block;margin-bottom:2px}
+.ccard p.dev{border-left:2px solid var(--fin);padding-left:9px}
+.src{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ink-2)}
+.src a{color:var(--ink)}
+.note{margin:0;padding:11px 13px;font-size:13.5px;line-height:1.5;background:color-mix(in srgb,var(--accent) 7%,transparent);border-left:3px solid var(--accent);max-width:80ch}
+.keyrow{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--ink-2);align-items:center}
+
+@media (max-width:1240px) and (min-width:1000px){.col-left{width:262px}.col-right{width:318px}.flowbar{width:calc(100% - 630px)}.node{width:58px}.legend span:nth-child(n+5){display:none}}
+@media (max-width:999px){
+  body{overflow:auto}
+  .app{height:auto;display:block}
+  .top{position:sticky;top:env(safe-area-inset-top,0px);flex-wrap:wrap;gap:6px 14px;padding-block:8px 0}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel-solid)}
+  .top .disc{display:none}
+  .tabs{width:100%;height:38px}
+  main{position:static}
+  .anat{position:static;overflow:visible;display:flex;flex-direction:column;gap:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 24px}
+  .col{display:contents}
+  #stage{position:relative;inset:auto;height:66vh;min-height:360px;max-height:680px;order:1;margin:0 calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));border-bottom:1px solid var(--line)}
+  .view{order:2}
+  .flowbar{order:3;position:static;transform:none;width:auto;max-width:100%;align-items:stretch}
+  .chain{justify-content:flex-start}
+  .parts{order:4;flex:none;overflow:visible}
+  .detail{order:5;flex:none;overflow:visible}
+  .readout{order:6}
+  .credit{order:7}
+  .legend{top:8px;gap:10px;font-size:8.5px;flex-wrap:wrap;justify-content:center;width:calc(100% - 24px)}
+  #loader{top:auto;bottom:10px}
+  .hint{display:none}
+  .tag .nl{display:none}.tag .ns{display:inline}
+  .doc{position:static;overflow:visible}
+  .grid2,.grid3,.cards{grid-template-columns:minmax(0,1fr)}
+  .lab{grid-template-columns:minmax(0,1fr)}
+  .lab canvas{border-right:0;border-bottom:1px solid var(--line);height:260px}
+  .layer{grid-template-columns:minmax(0,1fr)}
+  .rate{grid-template-columns:minmax(0,1fr) 92px}
+  .rate .bar{grid-column:1/-1;grid-row:2}
+  .rate.axis{display:none}
+  .pbar{grid-template-columns:minmax(0,1fr) 100px}
+  .pbar .bar{grid-column:1/-1;grid-row:2}
+  .tl li{grid-template-columns:minmax(0,1fr)}
+  .dh h2{font-size:32px}
+}
+@media (prefers-reduced-motion: reduce){.col,.flowbar,.legend{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><div class="rule"></div><div><h1>Anatomi <span>Optimus</span></h1><p>Humanoid · 173 cm · 2,3 kWh · 52 V · 28 + 12 aktuator</p></div></div>
+    <nav class="tabs" role="tablist" aria-label="Bagian">
+      <button class="tab" role="tab" data-tab="anatomi">Anatomi 3D</button>
+      <button class="tab" role="tab" data-tab="aktuator">Motor &amp; sendi</button>
+      <button class="tab" role="tab" data-tab="elektronik">Elektronik</button>
+      <button class="tab" role="tab" data-tab="chip">Chip</button>
+      <button class="tab" role="tab" data-tab="os">OS &amp; software</button>
+      <button class="tab" role="tab" data-tab="industri">Constraint industri</button>
+    </nav>
+    <p class="disc">Materi edukasi tidak resmi · status per Nov 2026</p>
+  </header>
+
+  <main>
+  <section class="anat" id="v-anatomi" aria-label="Anatomi 3D">
+    <div id="stage">
+      <svg id="leaders" aria-hidden="true"></svg>
+      <div id="tags"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i style="--c:var(--rot)"></i>Rotari</span>
+        <span><i style="--c:var(--lin)"></i>Linear</span>
+        <span><i style="--c:var(--fin)"></i>Jari</span>
+        <span><i style="--c:var(--sen)"></i>Sensor</span>
+        <span><i style="--c:var(--pwr)"></i>Daya 52 V</span>
+        <span><i class="dash" style="--c:var(--sig)"></i>Data</span>
+      </div>
+      <div id="loader"><span id="loaderTxt">Memuat model robot</span><b><i id="loaderBar"></i></b></div>
+    </div>
+
+    <aside class="col col-left">
+      <section class="card readout" aria-label="Telemetri simulasi">
+        <div class="chips" id="acts">
+          <button class="chip acc" data-act="diam">Duduk</button>
+          <button class="chip acc" data-act="berdiri">Berdiri</button>
+          <button class="chip acc" data-act="jalan">Jalan</button>
+          <button class="chip acc" data-act="angkat">Angkat 20 kg</button>
+          <button class="chip acc" data-act="telur">Pegang telur</button>
+        </div>
+        <div class="big" id="bigP">0<small>W</small></div>
+        <canvas id="spark" aria-label="Riwayat daya 30 detik"></canvas>
+        <p class="eyebrow plabel"><span id="pLabel">Daya total</span><span class="mono" id="pConf"></span></p>
+        <dl class="stats">
+          <div><dt>Baterai</dt><dd><b id="sSoc">0</b> %</dd></div>
+          <div><dt>Sisa</dt><dd><b id="sRem">0</b> jam</dd></div>
+          <div><dt>Arus</dt><dd><b id="sI">0</b> A</dd></div>
+          <div><dt>Tegangan</dt><dd><b id="sV">0</b> V</dd></div>
+          <div><dt>Torsi lutut</dt><dd><b id="sTk">0</b> Nm</dd></div>
+          <div><dt>Suhu lutut</dt><dd><b id="sTt">0</b> °C</dd></div>
+        </dl>
+      </section>
+      <nav class="card parts" id="parts" aria-label="Komponen dari kepala sampai kaki"></nav>
+    </aside>
+
+    <aside class="col col-right">
+      <article class="card detail" id="detail" aria-live="polite">
+        <div class="d-top"><p class="eyebrow" id="dGrp"></p><span class="dom" id="dDom"></span></div>
+        <h2 id="dName"></h2>
+        <p class="d-en" id="dEn"></p>
+        <p class="d-role" id="dRole"></p>
+        <div class="chart">
+          <div class="chart-head"><p class="eyebrow" id="cTitle"></p><span class="mono" id="cMeta"></span></div>
+          <canvas id="chart"></canvas>
+          <p class="cap" id="cCap"></p>
+        </div>
+        <h3 class="eyebrow">Cara kerja</h3>
+        <ol class="steps" id="dSteps"></ol>
+        <h3 class="eyebrow">Spesifikasi &amp; elektronik</h3>
+        <dl class="specs" id="dSpecs"></dl>
+        <h3 class="eyebrow">Constraint industri</h3>
+        <div class="ind" id="dInd"></div>
+        <h3 class="eyebrow">Terhubung ke</h3>
+        <div class="links" id="dLinks"></div>
+        <p class="keyline"><span class="cf cf-R">Resmi</span> materi Tesla <span class="cf cf-L">Laporan</span> paten, pernyataan, analisis <span class="cf cf-I">Inferensi</span> praktik industri</p>
+      </article>
+      <section class="card view" aria-label="Tampilan">
+        <p class="eyebrow">Kamera</p>
+        <div class="chips" id="cams">
+          <button class="chip" data-cam="depan">Depan</button>
+          <button class="chip" data-cam="tiga">3/4</button>
+          <button class="chip" data-cam="samping">Samping</button>
+          <button class="chip" data-cam="belakang">Belakang</button>
+          <button class="chip" data-cam="fokus">Fokus</button>
+        </div>
+        <p class="eyebrow">Cangkang</p>
+        <div class="chips" id="shells">
+          <button class="chip" data-shell="solid">Solid</button>
+          <button class="chip" data-shell="xray">X-ray</button>
+          <button class="chip" data-shell="off">Tanpa</button>
+        </div>
+        <p class="eyebrow">Overlay</p>
+        <div class="chips" id="ovl">
+          <button class="chip acc" data-ov="labels">Label</button>
+          <button class="chip acc" data-ov="power">Daya</button>
+          <button class="chip acc" data-ov="data">Data</button>
+          <button class="chip acc" data-ov="isolate">Isolasi</button>
+        </div>
+      </section>
+      <p class="credit">Model 3D: <a href="https://sketchfab.com/3d-models/tesla-bot-7664b167d89c4e1aa6ea101b11fc8118" target="_blank" rel="noopener">“Tesla Bot”</a> oleh <a href="https://sketchfab.com/amalmurali347" target="_blank" rel="noopener">amalmurali347</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, diskalakan ke 173 cm. Bentuknya mengikuti konsep 2021; komponen internal dibuat prosedural dan posisinya ilustratif. Bukan materi resmi Tesla.</p>
+    </aside>
+
+    <section class="flowbar" aria-label="Rantai kendali">
+      <p class="fhead">Rantai kendali <em>· klik tahap · angka = tipikal industri</em></p>
+      <div class="chain" id="chain"></div>
+      <p id="chainCap"></p>
+      <p class="hint">Seret untuk memutar · gulir untuk zoom · klik komponen · H sembunyikan panel</p>
+    </section>
+  </section>
+
+  <section class="doc" id="v-aktuator" hidden aria-label="Motor dan sendi">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Motor per sendi</p>
+        <h2>Motor cepat, sendi kuat: <span>semua aktuator menukar kecepatan dengan tenaga</span></h2>
+        <p class="lede">Motor listrik paling efisien saat berputar ribuan rpm dengan torsi kecil. Sendi robot butuh kebalikannya: pelan, dengan torsi besar. Setiap aktuator Optimus adalah motor magnet permanen (PMSM, magnet NdFeB) ditambah mekanisme reduksi. Bedanya hanya di mekanisme itu.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Lab aktuator</h3>
+        <div class="chips" id="labFam" role="group" aria-label="Jenis aktuator">
+          <button class="chip acc" data-fam="rotary">Rotari · strain wave</button>
+          <button class="chip acc" data-fam="linear">Linear · roller screw</button>
+          <button class="chip acc" data-fam="finger">Jari · worm + tendon</button>
+        </div>
+        <div class="box lab" style="padding:0">
+          <canvas id="labCv" aria-label="Animasi aktuator"></canvas>
+          <div class="ctl">
+            <label class="rng" for="lT"><span id="lTl">Torsi motor</span><output id="lTo"></output><input type="range" id="lT"></label>
+            <label class="rng" for="lS"><span>Kecepatan motor</span><output id="lSo"></output><input type="range" id="lS" min="500" max="6000" step="100" value="3000"></label>
+            <label class="rng" for="lR"><span id="lRl">Rasio</span><output id="lRo"></output><input type="range" id="lR"></label>
+            <dl class="outs">
+              <div><dt id="oAl">Torsi output</dt><dd id="oA"></dd></div>
+              <div><dt id="oBl">Kecepatan output</dt><dd id="oB"></dd></div>
+              <div><dt>Daya mekanis</dt><dd id="oC"></dd></div>
+              <div><dt>Efisiensi asumsi</dt><dd id="oD"></dd></div>
+            </dl>
+            <p class="formula" id="lF"></p>
+          </div>
+        </div>
+        <ol class="olist" id="labSteps"></ol>
+      </section>
+
+      <section class="sec">
+        <h3>Enam desain aktuator yang dipakai ulang di seluruh tubuh</h3>
+        <p class="sub">Di AI Day 2022 Tesla menunjukkan 28 aktuator struktural yang dibangun hanya dari enam desain. Memakai ulang desain menekan biaya cetakan, pengujian, dan suku cadang.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Jenis</th><th>Kelas</th><th>Massa</th><th>Kepadatan</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Rotari</td><td class="n">20 Nm</td><td class="n">0,55 kg</td><td class="n">36 Nm/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Rotari</td><td class="n">110 Nm</td><td class="n">1,62 kg</td><td class="n">68 Nm/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Rotari</td><td class="n">180 Nm</td><td class="n">2,26 kg</td><td class="n">80 Nm/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Linear</td><td class="n">500 N</td><td class="n">0,36 kg</td><td class="n">1.389 N/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Linear</td><td class="n">3.900 N</td><td class="n">0,93 kg</td><td class="n">4.194 N/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Linear</td><td class="n">8.000 N</td><td class="n">2,2 kg</td><td class="n">3.636 N/kg</td><td><span class="cf cf-R">Resmi</span></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Peta sendi: aktuator apa di mana</h3>
+        <p class="sub">Tesla hanya merilis total dan enam kelasnya. Pembagian per sendi di bawah berasal dari analisis rantai pasok (14 rotari + 14 linear), dan kelas per sendi adalah inferensi dari beban yang masuk akal.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Sendi</th><th>DOF</th><th>Aktuator</th><th>Kelas (inferensi)</th><th>Kenapa jenis ini</th></tr></thead>
+          <tbody>
+            <tr><td>Leher</td><td class="n">2</td><td>Rotari kecil <span class="cf cf-I">Inferensi</span></td><td class="n">&lt; 20 Nm</td><td>Ditambahkan di Gen 2; beban hanya kepala.</td></tr>
+            <tr><td>Bahu</td><td class="n">3 × 2</td><td>3 rotari <span class="cf cf-L">Laporan</span></td><td class="n">110–180 Nm</td><td>Rentang gerak lebar, tiga sumbu bertumpuk seperti sendi bola.</td></tr>
+            <tr><td>Siku</td><td class="n">1 × 2</td><td>1 linear <span class="cf cf-L">Laporan</span></td><td class="n">3.900 N</td><td>Mendorong tuas seperti otot bisep; motor di lengan atas.</td></tr>
+            <tr><td>Pergelangan</td><td class="n">3 × 2</td><td>1 rotari + 2 linear <span class="cf cf-L">Laporan</span></td><td class="n">20 Nm · 500 N</td><td>Motor dipindah ke lengan bawah agar ujung lengan ringan.</td></tr>
+            <tr><td>Tangan</td><td class="n">11 × 2</td><td>6 motor mini + worm + tendon <span class="cf cf-R">Resmi</span></td><td class="n">tas 9 kg</td><td>Genggaman terkunci tanpa arus (worm tidak bisa diputar balik).</td></tr>
+            <tr><td>Torso</td><td class="n">2</td><td>2 rotari <span class="cf cf-L">Laporan</span></td><td class="n">180 Nm</td><td>Menahan badan atas plus beban di tangan.</td></tr>
+            <tr><td>Pinggul</td><td class="n">3 × 2</td><td>2 rotari + 1 linear <span class="cf cf-L">Laporan</span></td><td class="n">180 Nm · 8.000 N</td><td>Pitch butuh tenaga terbesar saat melangkah dan jongkok.</td></tr>
+            <tr><td>Lutut</td><td class="n">1 × 2</td><td>1 linear + four-bar <span class="cf cf-R">Resmi</span></td><td class="n">8.000 N</td><td>Linkage memperbesar lengan momen saat lutut menekuk dalam.</td></tr>
+            <tr><td>Pergelangan kaki</td><td class="n">2 × 2</td><td>2 linear paralel <span class="cf cf-L">Laporan</span></td><td class="n">3.900 N</td><td>Motor di betis mengurangi massa ayun kaki.</td></tr>
+          </tbody>
+          <tfoot><tr><td>Total</td><td class="n" colspan="4">28 aktuator struktural (14 rotari + 14 linear) + 12 aktuator tangan; Gen 2 menambah 2 di leher</td></tr></tfoot>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Bagaimana driver memutar motor: Field-Oriented Control</h3>
+        <div class="grid2">
+          <div class="box" style="padding:0"><canvas id="focCv" style="display:block;width:100%;height:260px" aria-label="Animasi arus 3-fasa dan vektor medan"></canvas></div>
+          <ol class="olist">
+            <li>Encoder membaca sudut rotor θ, puluhan ribu kali per detik.</li>
+            <li>Sensor arus mengukur dua fasa; fasa ketiga dihitung karena jumlah ketiganya nol.</li>
+            <li>Transformasi Clarke lalu Park memutar arus 3-fasa ke kerangka rotor: <b>I<sub>d</sub></b> (searah magnet, membuat fluks) dan <b>I<sub>q</sub></b> (tegak lurus magnet, membuat torsi).</li>
+            <li>Dua kontroler PI menahan I<sub>q</sub> = target torsi dan I<sub>d</sub> ≈ 0. Torsi motor ≈ k<sub>t</sub> × I<sub>q</sub>.</li>
+            <li>Hasilnya diubah balik menjadi tiga tegangan dan dipotong-potong oleh 6 transistor (PWM) pada 20–40 kHz <span class="cf cf-I">Inferensi</span>.</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-elektronik" hidden aria-label="Elektronik">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Spesifikasi elektronik</p>
+        <h2>Satu baterai 52 V, empat puluhan aktuator, <span>satu komputer pusat</span></h2>
+        <p class="lede">Baterai di dada membagi daya ke tiap anggota tubuh. Setiap aktuator punya driver sendiri di dekat motornya, sehingga kabel daya cukup satu jalur 52 V per anggota tubuh, dan perintah datang lewat bus data.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Arsitektur daya &amp; data</h3>
+        <div class="keyrow"><span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" class="p52"/></svg> Daya 52 V</span><span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" class="plv"/></svg> Tegangan rendah 12/5 V</span><span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" class="dat"/></svg> Data</span><span>Topologi bus: <span class="cf cf-I">Inferensi</span></span></div>
+        <div class="svgwrap">
+          <svg viewBox="0 0 960 440" role="img" aria-label="Diagram distribusi daya dan data">
+            <path class="p52" d="M180 220 H220"/>
+            <path class="p52" d="M340 220 H380 M380 50 V390"/>
+            <g class="p52"><path d="M380 50 H420"/><path d="M380 105 H420"/><path d="M380 160 H420"/><path d="M380 215 H420"/><path d="M380 270 H420"/><path d="M380 325 H420"/><path d="M380 380 H420"/></g>
+            <path class="plv" d="M280 270 V330"/>
+            <path class="plv" d="M340 360 H360 V420 H690 V205 H700 M690 335 H700"/>
+            <path class="dat" d="M620 50 H660 M620 105 H660 M620 160 H660 M620 215 H660 M620 270 H660 M620 325 H660 M620 380 H660 M660 50 V380 M660 190 H700"/>
+            <rect class="blk hi" x="30" y="160" width="150" height="120" rx="3"/>
+            <text x="44" y="188" font-weight="600" font-size="17">Baterai</text>
+            <text x="44" y="210" class="tm" font-size="12">2,3 kWh · 52 V</text>
+            <text x="44" y="230" class="tm t2" font-size="11">≈ 14 sel seri</text>
+            <text x="44" y="262" class="t3" font-size="10.5">di dalam torso</text>
+            <rect class="blk" x="220" y="170" width="120" height="100" rx="3"/>
+            <text x="232" y="196" font-weight="600" font-size="15">BMS</text>
+            <text x="232" y="216" class="t2" font-size="11.5">kontaktor, sekring</text>
+            <text x="232" y="232" class="t2" font-size="11.5">SOC, suhu sel</text>
+            <rect class="blk" x="220" y="330" width="120" height="60" rx="3"/>
+            <text x="232" y="355" font-weight="600" font-size="14">DC-DC</text>
+            <text x="232" y="374" class="tm t2" font-size="11">52 V → 12/5 V</text>
+            <g font-size="12.5">
+              <rect class="blk" x="420" y="32" width="200" height="36" rx="3"/><text x="432" y="55">Leher · 2 aktuator</text>
+              <rect class="blk" x="420" y="87" width="200" height="36" rx="3"/><text x="432" y="110">Lengan kiri · 7 aktuator</text>
+              <rect class="blk" x="420" y="142" width="200" height="36" rx="3"/><text x="432" y="165">Lengan kanan · 7 aktuator</text>
+              <rect class="blk" x="420" y="197" width="200" height="36" rx="3"/><text x="432" y="220">Tangan · 2 × 6 motor mini</text>
+              <rect class="blk" x="420" y="252" width="200" height="36" rx="3"/><text x="432" y="275">Torso · 2 aktuator</text>
+              <rect class="blk" x="420" y="307" width="200" height="36" rx="3"/><text x="432" y="330">Kaki kiri · 6 aktuator</text>
+              <rect class="blk" x="420" y="362" width="200" height="36" rx="3"/><text x="432" y="385">Kaki kanan · 6 aktuator</text>
+            </g>
+            <text x="420" y="22" class="t3" font-size="10.5">tiap aktuator: driver FOC + encoder + sensor gaya</text>
+            <rect class="blk hi" x="700" y="140" width="230" height="110" rx="3"/>
+            <text x="714" y="166" font-weight="600" font-size="16">Komputer pusat</text>
+            <text x="714" y="187" class="tm" font-size="11.5">Tesla SoC (garis FSD)</text>
+            <text x="714" y="206" class="t2" font-size="11.5">Wi-Fi · LTE · audio</text>
+            <text x="714" y="236" class="t3" font-size="10.5">kebijakan AI + kontrol tubuh</text>
+            <rect class="blk" x="700" y="300" width="230" height="70" rx="3"/>
+            <text x="714" y="325" font-weight="600" font-size="14">Sensor pusat</text>
+            <text x="714" y="346" class="t2" font-size="11.5">kamera · IMU · mikrofon</text>
+            <path class="dat" d="M815 250 V300"/>
+          </svg>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h3>Spesifikasi daya</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Parameter</th><th>Nilai</th><th>Status</th><th>Catatan</th></tr></thead>
+          <tbody>
+            <tr><td>Energi baterai</td><td class="n">2,3 kWh</td><td><span class="cf cf-R">Resmi</span></td><td>AI Day 2022, paket terintegrasi di torso.</td></tr>
+            <tr><td>Tegangan sistem</td><td class="n">52 V</td><td><span class="cf cf-R">Resmi</span></td><td>Di bawah batas tegangan sentuh aman ± 60 V DC, jadi tidak perlu isolasi kelas tegangan tinggi.</td></tr>
+            <tr><td>Konfigurasi sel</td><td class="n">≈ 14s</td><td><span class="cf cf-I">Inferensi</span></td><td>52 V ÷ 3,7 V per sel Li-ion ≈ 14 sel seri.</td></tr>
+            <tr><td>Kapasitas muatan</td><td class="n">≈ 44 Ah</td><td><span class="cf cf-I">Inferensi</span></td><td>2.300 Wh ÷ 52 V.</td></tr>
+            <tr><td>Daya duduk diam</td><td class="n">≈ 100 W</td><td><span class="cf cf-R">Resmi</span></td><td>Sebagian besar untuk komputer dan elektronik.</td></tr>
+            <tr><td>Daya jalan cepat</td><td class="n">≈ 500 W</td><td><span class="cf cf-R">Resmi</span></td><td>Arus rata-rata ≈ 10 A dari 52 V.</td></tr>
+            <tr><td>Driver motor</td><td>Inverter 3-fasa lokal per aktuator</td><td><span class="cf cf-I">Inferensi</span></td><td>MOSFET atau GaN kelas 80–100 V, FOC.</td></tr>
+            <tr><td>Harness</td><td>Elektronik &amp; kabel terintegrasi (Gen 2)</td><td><span class="cf cf-R">Resmi</span></td><td>Mengurangi konektor, titik rawan putus.</td></tr>
+            <tr><td>Bus data</td><td>Tidak dirilis</td><td><span class="cf cf-I">Inferensi</span></td><td>Humanoid lain umumnya memakai EtherCAT atau CAN-FD.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Anggaran daya per aktivitas</h3>
+        <p class="sub">Batang penuh = angka resmi Tesla. Batang arsir = estimasi untuk perbandingan. Waktu kerja = 2.300 Wh × 0,9 (energi terpakai, inferensi) ÷ daya.</p>
+        <div class="pbars" id="pbars"></div>
+      </section>
+
+      <section class="sec">
+        <h3>Inventaris sensor</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Sensor</th><th>Jumlah</th><th>Lokasi</th><th>Fungsi</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Kamera</td><td>Tidak dirilis</td><td>Kepala</td><td>Persepsi visual, tanpa LiDAR</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Mikrofon &amp; speaker</td><td>Tidak dirilis</td><td>Kepala/torso</td><td>Perintah suara, respons</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Encoder posisi</td><td>≈ 2 per aktuator</td><td>Sisi motor &amp; sisi output</td><td>Sudut rotor untuk FOC, sudut sendi untuk kontrol</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Sensor gaya/torsi aktuator</td><td>≈ 1 per aktuator</td><td>Output aktuator</td><td>Kontrol gaya, deteksi tabrakan</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Gaya/torsi kaki</td><td>1 per kaki</td><td>Telapak</td><td>Center of pressure, deteksi kontak</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Taktil jari</td><td>Semua ujung jari</td><td>Tangan</td><td>Tekanan genggam (memegang telur)</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>IMU</td><td>≥ 1</td><td>Torso</td><td>Orientasi &amp; percepatan untuk keseimbangan</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+            <tr><td>Suhu</td><td>Banyak</td><td>Motor, driver, sel</td><td>Proteksi termal</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-chip" hidden aria-label="Chip">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Detail chip</p>
+        <h2>Otak yang sama dengan mobil: <span>Tesla SoC</span></h2>
+        <p class="lede">Prototipe Gen 1 (2022) memakai satu Tesla SoC, chip yang sama dengan komputer Full Self-Driving di mobil. Chip generasi berikutnya belum dirilis spesifikasinya untuk Optimus, jadi rincian di bawah memakai chip FSD generasi pertama (HW3) yang datanya dipublikasikan di Hot Chips 2019.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Denah blok chip FSD (HW3)</h3>
+        <div class="svgwrap">
+          <svg viewBox="0 0 760 360" role="img" aria-label="Diagram blok chip FSD">
+            <rect class="die" x="10" y="10" width="740" height="340" rx="4"/>
+            <rect class="npu" x="30" y="30" width="220" height="140" rx="3"/>
+            <text x="44" y="56" font-weight="600" font-size="16">NPU 0</text>
+            <text x="44" y="78" class="tm" font-size="11.5">96 × 96 MAC · INT8</text>
+            <text x="44" y="96" class="tm" font-size="11.5">32 MB SRAM</text>
+            <text x="44" y="152" class="tm" font-size="13" font-weight="500">36,9 TOPS</text>
+            <rect class="npu" x="270" y="30" width="220" height="140" rx="3"/>
+            <text x="284" y="56" font-weight="600" font-size="16">NPU 1</text>
+            <text x="284" y="78" class="tm" font-size="11.5">96 × 96 MAC · INT8</text>
+            <text x="284" y="96" class="tm" font-size="11.5">32 MB SRAM</text>
+            <text x="284" y="152" class="tm" font-size="13" font-weight="500">36,9 TOPS</text>
+            <rect class="cpu" x="510" y="30" width="220" height="140" rx="3"/>
+            <text x="524" y="56" font-weight="600" font-size="16">CPU</text>
+            <text x="524" y="78" class="tm" font-size="11.5">12 × Cortex-A72</text>
+            <text x="524" y="96" class="tm" font-size="11.5">3 kluster × 4 inti · 2,2 GHz</text>
+            <rect class="cpu" x="524" y="112" width="58" height="44" rx="2"/><rect class="cpu" x="591" y="112" width="58" height="44" rx="2"/><rect class="cpu" x="658" y="112" width="58" height="44" rx="2"/>
+            <rect class="oth" x="30" y="190" width="160" height="72" rx="3"/>
+            <text x="42" y="214" font-weight="600" font-size="14">GPU</text>
+            <text x="42" y="234" class="tm t2" font-size="11">Mali-G71 MP12</text>
+            <text x="42" y="250" class="tm t2" font-size="11">≈ 600 GFLOPS</text>
+            <rect class="oth" x="205" y="190" width="160" height="72" rx="3"/>
+            <text x="217" y="214" font-weight="600" font-size="14">ISP kamera</text>
+            <text x="217" y="234" class="tm t2" font-size="11">input ≈ 2,5 Gpiksel/s</text>
+            <rect class="oth" x="380" y="190" width="160" height="72" rx="3"/>
+            <text x="392" y="214" font-weight="600" font-size="14">Enkoder video</text>
+            <text x="392" y="234" class="tm t2" font-size="11">H.265</text>
+            <rect class="oth" x="555" y="190" width="175" height="72" rx="3"/>
+            <text x="567" y="214" font-weight="600" font-size="14">Sistem keselamatan</text>
+            <text x="567" y="234" class="tm t2" font-size="11">CPU lockstep · keamanan</text>
+            <rect class="oth" x="30" y="280" width="700" height="52" rx="3"/>
+            <text x="42" y="304" font-weight="600" font-size="14">Antarmuka memori</text>
+            <text x="42" y="322" class="tm t2" font-size="11">LPDDR4-4266 · 128-bit · ≈ 68 GB/s</text>
+            <text x="738" y="322" class="tm t3" font-size="10.5" text-anchor="end">Samsung 14 nm · 260 mm² · 6 miliar transistor</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h3>Hitung sendiri: dari mana angka TOPS</h3>
+        <div class="box grid2">
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+            <label class="rng" for="tN"><span>Sisi array MAC</span><output id="tNo"></output><input type="range" id="tN" min="32" max="192" step="16" value="96"></label>
+            <label class="rng" for="tF"><span>Frekuensi</span><output id="tFo"></output><input type="range" id="tF" min="0.5" max="3" step="0.1" value="2"></label>
+            <label class="rng" for="tC"><span>Jumlah NPU</span><output id="tCo"></output><input type="range" id="tC" min="1" max="4" step="1" value="2"></label>
+          </div>
+          <dl class="outs" style="border-top:0;padding-top:0;align-content:start">
+            <div><dt>Per NPU</dt><dd id="tA"></dd></div>
+            <div><dt>Per chip</dt><dd id="tB"></dd></div>
+            <div style="grid-column:1/-1"><p class="formula" id="tFm"></p></div>
+          </dl>
+        </div>
+        <p class="sub">Satu MAC = satu perkalian + satu penjumlahan = 2 operasi per siklus. Preset 96 · 2,0 GHz · 2 NPU = chip FSD asli. Komputer FSD di mobil memasang dua chip untuk redundansi (≈ 144 TOPS); Optimus Gen 1 memakai satu.</p>
+      </section>
+
+      <section class="sec">
+        <h3>Generasi chip dan pembanding</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Chip</th><th>Tahun</th><th>Proses</th><th>Komputasi</th><th>Dipakai di</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Tesla FSD (HW3)</td><td class="n">2019</td><td>Samsung 14 nm</td><td class="n">73,7 TOPS/chip</td><td>Mobil HW3, Optimus Gen 1</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Tesla AI4 (HW4)</td><td class="n">2023</td><td>Samsung kelas 7 nm</td><td>20 inti CPU, 3 NPU (teardown)</td><td>Mobil HW4; diduga Optimus Gen 2/3</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Tesla AI5</td><td class="n">± 2027</td><td>TSMC &amp; Samsung</td><td>Klaim Musk: hingga ± 40× AI4 pada beban tertentu</td><td>Optimus produksi volume (target)</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>NVIDIA Jetson AGX Thor</td><td class="n">2025</td><td>Blackwell</td><td class="n">≈ 2.070 TFLOPS FP4 (sparse), 128 GB, 40–130 W</td><td>Banyak humanoid lain</td><td><span class="cf cf-R">Resmi</span></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Chip kecil di setiap sendi</h3>
+        <div class="grid2">
+          <div class="box"><p style="margin:0 0 8px"><span class="cf cf-I">Inferensi</span></p><p style="margin:0;line-height:1.55">Setiap aktuator butuh mikrokontroler sendiri untuk loop arus FOC puluhan kHz. Tesla tidak merilis chipnya. Di industri, peran ini biasanya dipegang MCU ARM Cortex-M4/M7 atau DSP kendali motor (keluarga TI C2000, STM32G4) 150–600 MHz, yang punya timer PWM resolusi tinggi dan ADC cepat untuk sensor arus.</p></div>
+          <div class="box"><p style="margin:0 0 8px"><span class="cf cf-I">Inferensi</span></p><p style="margin:0;line-height:1.55">Pembagian kerjanya: SoC pusat memutuskan <i>apa</i> yang dilakukan (target posisi/torsi ratusan kali per detik), MCU di sendi memutuskan <i>bagaimana</i> arus mengalir (puluhan ribu kali per detik). Komputer pusat tidak pernah menyalakan transistor motor secara langsung.</p></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-os" hidden aria-label="OS dan software">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Spek OS</p>
+        <h2>Tesla tidak pernah merilis OS Optimus. <span>Ini yang bisa dipastikan dan yang hanya diduga.</span></h2>
+        <p class="lede">Tidak ada produk resmi bernama “Tesla Bot OS”. Yang resmi: Optimus memakai komputer dan pendekatan jaringan saraf yang sama dengan FSD. Komputer Autopilot di mobil menjalankan Linux (Tesla mempublikasikan sumber kernelnya), sehingga Linux di SoC Optimus adalah dugaan yang kuat, bukan fakta.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Tumpukan software, dari tugas sampai transistor</h3>
+        <div class="stack">
+          <div class="layer" style="--c:var(--accent)"><h4>Antarmuka<small>suara · teleop · aplikasi</small></h4><p>Perintah lisan dan pengendalian jarak jauh. Integrasi asisten Grok untuk percakapan disebut Musk.</p><span class="cf cf-L">Laporan</span></div>
+          <div class="layer" style="--c:var(--accent)"><h4>Kebijakan AI<small>jaringan saraf</small></h4><p>Jaringan saraf end-to-end: video kamera dan keadaan sendi masuk, target gerak keluar. Arsitekturnya diturunkan dari FSD; dilatih di klaster data center Tesla.</p><span class="cf cf-R">Resmi</span></div>
+          <div class="layer" style="--c:var(--rot)"><h4>Kontrol gerak<small>whole-body control</small></h4><p>Estimasi keadaan (IMU + kinematika + sensor kaki), keseimbangan, dan pembagian torsi ke tiap sendi. Biasanya gabungan model fisika (MPC) dan kebijakan hasil reinforcement learning.</p><span class="cf cf-I">Inferensi</span></div>
+          <div class="layer" style="--c:var(--lin)"><h4>OS di SoC<small>kernel · driver</small></h4><p>Linux, kemungkinan dengan patch real-time, seperti komputer Autopilot di mobil. Middleware dan nama sistemnya tidak dirilis.</p><span class="cf cf-L">Laporan</span></div>
+          <div class="layer" style="--c:var(--sig)"><h4>Firmware sendi<small>RTOS / bare-metal</small></h4><p>Loop FOC, pembacaan encoder, proteksi arus dan suhu di MCU tiap aktuator.</p><span class="cf cf-I">Inferensi</span></div>
+          <div class="layer" style="--c:var(--ink-3)"><h4>Perangkat keras<small>SoC · MCU · sensor</small></h4><p>Lihat tab Chip dan Elektronik.</p><span class="cf cf-R">Resmi</span></div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h3>Setiap lapisan berdetak di kecepatan berbeda</h3>
+        <p class="sub">Skala logaritmik, 1 Hz sampai 100 kHz. Semua rentang adalah angka tipikal humanoid <span class="cf cf-I">Inferensi</span>, kecuali Helix (Figure) sebagai contoh resmi dari pabrikan lain.</p>
+        <div class="box rates" id="rates"></div>
+      </section>
+
+      <section class="sec">
+        <h3>Bagaimana Optimus belajar</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Sumber data</th><th>Cara</th><th>Kelemahan</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Teleoperasi</td><td>Operator memakai setelan motion-capture dan headset VR; gerakannya direkam sebagai contoh.</td><td>Mahal dan lambat, satu operator satu robot.</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Video manusia</td><td>Model belajar dari rekaman orang mengerjakan tugas. Laporan pertengahan 2025 menyebut Tesla memindahkan fokus ke sini.</td><td>Tangan manusia dan robot berbeda bentuk; gaya tidak terekam.</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Simulasi</td><td>Kebijakan berjalan dilatih jutaan kali di simulator, lalu dipindah ke robot (sim-to-real).</td><td>Gesekan dan kontak sulit disimulasikan akurat.</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+            <tr><td>Armada</td><td>Robot yang bekerja di pabrik Tesla mengirim data balik; model baru dikirim lewat pembaruan OTA.</td><td>Butuh banyak robot yang sudah bekerja.</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="sub">Pelatihan memakai klaster GPU Tesla. Proyek superkomputer Dojo dilaporkan dihentikan Agustus 2025; Dojo tidak pernah menjadi komputer di dalam robot, berbeda dengan klaim salah satu infografis.</p>
+      </section>
+
+      <section class="sec">
+        <h3>Pembanding: software humanoid lain</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Platform</th><th>OS / runtime</th><th>Model AI</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Tesla Optimus</td><td>Tidak dirilis; Linux diduga</td><td>Jaringan saraf end-to-end turunan FSD</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Figure 03</td><td>In-house</td><td>Helix: “System 2” VLM 7 miliar parameter pada 7–9 Hz + “System 1” 80 juta parameter pada 200 Hz</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Unitree G1 / H1</td><td>Linux; SDK2 berbasis DDS, kompatibel ROS 2</td><td>Terbuka untuk riset pengguna</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Ekosistem NVIDIA</td><td>Jetson Thor + JetPack (Ubuntu), Isaac ROS</td><td>Isaac GR00T N1 (foundation model humanoid)</td><td><span class="cf cf-R">Resmi</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="sub">ROS 2 bukan sistem operasi. Ia middleware di atas Linux yang mengatur komunikasi antarproses (topik, layanan) dan banyak dipakai untuk riset humanoid.</p>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-industri" hidden aria-label="Constraint industri">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Constraint industri · November 2026</p>
+        <h2>Yang menahan humanoid masuk pabrik, <span>dan yang sedang dikerjakan</span></h2>
+        <p class="lede">Prototipe yang bisa berjalan sudah ada sejak 2022. Masalahnya sekarang ada di tangan, biaya aktuator, bahan magnet, baterai, data, dan standar keselamatan. Hingga akhir Oktober 2026 Tesla belum mengungkap Optimus V3 secara resmi.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Garis waktu</h3>
+        <ul class="tl">
+          <li><time>Agu 2021</time><span>Konsep Tesla Bot: 173 cm, 57 kg, 40 aktuator, target 8 km/j, angkat 20 kg. <span class="cf cf-R">Resmi</span></span></li>
+          <li><time>Sep 2022</time><span>Prototipe Gen 1: 73 kg, 28 aktuator struktural, tangan 11 DOF, baterai 2,3 kWh / 52 V, Tesla SoC. <span class="cf cf-R">Resmi</span></span></li>
+          <li><time>Des 2023</time><span>Gen 2: 10 kg lebih ringan, jalan 30 % lebih cepat, leher 2 DOF, taktil di semua jari, sensor gaya/torsi kaki, jari kaki beruas. <span class="cf cf-R">Resmi</span></span></li>
+          <li><time>Okt 2024</time><span>Acara We, Robot: Optimus melayani tamu; sebagian interaksi dikendalikan operator jarak jauh. <span class="cf cf-L">Laporan</span></span></li>
+          <li><time>Apr 2025</time><span>Tiongkok membatasi ekspor magnet tanah jarang; Musk menyebut produksi Optimus terdampak. <span class="cf cf-L">Laporan</span></span></li>
+          <li><time>2025</time><span>Target ribuan unit tahun itu tidak tercapai; tangan didesain ulang. <span class="cf cf-L">Laporan</span></span></li>
+          <li><time>Jan 2026</time><span>Tesla mengumumkan lini Model S/X di Fremont dialihkan untuk produksi Optimus. <span class="cf cf-L">Laporan</span></span></li>
+          <li class="now"><time>Okt 2026</time><span>V3 belum diungkap resmi. Paten tangan 22 DOF dengan aktuator di lengan bawah sudah terbit. <span class="cf cf-L">Laporan</span></span></li>
+        </ul>
+      </section>
+
+      <section class="sec">
+        <h3>Delapan constraint utama</h3>
+        <div class="cards" id="cards"></div>
+      </section>
+
+      <section class="sec">
+        <h3>Koreksi untuk infografis yang beredar</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Klaim di infografis</th><th>Yang tercatat</th></tr></thead>
+          <tbody>
+            <tr><td>Kepala memakai LiDAR</td><td>Optimus memakai kamera saja (vision-only), sama seperti FSD.</td></tr>
+            <tr><td>Komputer inti “Dojo supercomputer”</td><td>Dojo adalah klaster pelatihan di data center, tidak pernah dipasang di robot, dan dilaporkan dihentikan Agustus 2025. Di dalam robot ada Tesla SoC.</td></tr>
+            <tr><td>Sistem operasi “Tesla Bot OS”</td><td>Tidak ada nama atau spesifikasi OS resmi.</td></tr>
+            <tr><td>Rotor Halbach array</td><td>Tidak ada sumber resmi bahwa Optimus memakai Halbach array. Itu materi pemasaran pemasok magnet.</td></tr>
+            <tr><td>Panel muka untuk ekspresi</td><td>Panel muka Gen 2 adalah kaca hitam tanpa layar ekspresi.</td></tr>
+            <tr><td>Berat 56 kg, jalan 8 km/j</td><td>Angka target konsep 2021. Gen 1 tercatat 73 kg; Gen 2 lebih ringan 10 kg. Kecepatan aktual tidak dirilis.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Sumber</h3>
+        <ul class="src">
+          <li>Tesla AI Day 2021 (konsep) dan AI Day 2022 (30 Sep 2022): aktuator, baterai, komputer. Presentasi video Tesla.</li>
+          <li><a href="https://www.notateslaapp.com/news/1821/tesla-unveils-optimus-robot-gen-2-tesla-designed-fingertip-sensors-actuators-and-ten-other-improvements-video" target="_blank" rel="noopener">Not a Tesla App: Optimus Gen 2</a></li>
+          <li><a href="https://en.wikichip.org/wiki/tesla_(car_company)/fsd_chip" target="_blank" rel="noopener">WikiChip: Tesla FSD chip (Hot Chips 2019)</a></li>
+          <li><a href="https://github.com/teslamotors/linux" target="_blank" rel="noopener">teslamotors/linux: sumber kernel komputer Autopilot</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Optimus_(robot)" target="_blank" rel="noopener">Wikipedia: Optimus (robot)</a></li>
+          <li><a href="https://www.teslarati.com/tesla-optimus-v3-hand-arm-details-revealed-new-patents/" target="_blank" rel="noopener">Teslarati: paten tangan &amp; lengan V3</a></li>
+          <li><a href="https://humanoid.guide/linear-vs-rotary-actuators-humanoid-joints/" target="_blank" rel="noopener">Humanoid Guide: aktuator linear vs rotari</a></li>
+          <li><a href="https://www.globaltimes.cn/page/202504/1332704.shtml" target="_blank" rel="noopener">Global Times: dampak pembatasan magnet tanah jarang</a></li>
+          <li><a href="https://www.basenor.com/pages/tesla-optimus-tracker" target="_blank" rel="noopener">Basenor: pelacak status Optimus 2026</a></li>
+          <li><a href="https://www.figure.ai/news/helix" target="_blank" rel="noopener">Figure: Helix</a></li>
+          <li><a href="https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/" target="_blank" rel="noopener">NVIDIA Jetson Thor</a></li>
+        </ul>
+      </section>
+    </div>
+  </section>
+  </main>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const TAU = Math.PI * 2;
+const NF = {};
+const fmt = (n, d = 0) => (NF[d] ??= new Intl.NumberFormat('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d })).format(n);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MONO = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+const BODY = 'Barlow, system-ui, sans-serif';
+const isDesk = () => matchMedia('(min-width: 1000px)').matches;
+const CFN = { R: 'Resmi', L: 'Laporan', I: 'Inferensi' };
+const cf = k => k ? `<span class="cf cf-${k}">${CFN[k]}</span>` : '';
+
+/* ================= content ================= */
+const TYPE = { rot: ['rot', 'Rotari · strain wave'], lin: ['lin', 'Linear · roller screw'], mix: ['rot', 'Rotari + linear'], fin: ['fin', 'Motor mini · worm · tendon'], sen: ['sen', 'Sensor'], pwr: ['pwr', 'Daya 52 V'], sig: ['sig', 'Komputasi'] };
+// anchors in raw model coordinates (model is scaled to 173 cm in the scene)
+const PARTS = [
+  { id: 'kepala', grp: 'Kepala', type: 'sen', dof: 'sensor', short: 'Kepala', name: 'Kepala & Sensor', en: 'Head · vision-only cameras · audio',
+    role: 'Pusat persepsi. Kamera melihat, mikrofon mendengar. Optimus memakai pendekatan kamera saja seperti FSD, tanpa LiDAR.',
+    steps: ['Beberapa kamera di balik panel muka hitam merekam video terus-menerus. Konsepnya sama dengan kamera Autopilot di mobil Tesla.',
+      'Video dikirim lewat kabel serial berkecepatan tinggi ke komputer di torso. Kepala hampir tidak memproses apa pun sendiri.',
+      'Jaringan saraf memperkirakan jarak dari beberapa sudut pandang dan dari gerak kepala (paralaks), lalu membangun gambaran 3D ruang sekitar.',
+      'Mikrofon menangkap perintah suara; speaker memberi respons.'],
+    specs: [['Sensor utama', 'Kamera (vision-only)', 'R'], ['LiDAR', 'Tidak dipakai', 'L'], ['Jumlah kamera', 'Tidak dirilis', null], ['Audio', 'Mikrofon + speaker', 'R'], ['Panel muka', 'Kaca hitam, tanpa layar', 'L'], ['Pemrosesan', 'SoC di torso', 'R'], ['Antarmuka kamera', 'Serial berkecepatan tinggi', 'I']],
+    ind: ['Kamera saja harus menebak kedalaman. Benda transparan, cahaya silau, dan benda yang tertutup tangan sendiri sulit dilihat.', 'Fusi kamera dengan sensor taktil di jari, dan model visi-bahasa-aksi (VLA) yang belajar dari video manusia.'],
+    links: ['leher', 'komputer'],
+    chart: ['camera', 'Kedalaman dari paralaks', 'Dua sudut pandang melihat benda di posisi berbeda. Makin dekat benda, makin besar selisihnya (disparitas). Tesla memakai jaringan saraf multi-kamera, bukan stereo klasik, tetapi prinsip geometrinya sama.'],
+    view: { az: 25, el: 5, r: 0.75 }, anchor: [0.03, 1.88, 0.14] },
+  { id: 'leher', grp: 'Kepala', type: 'rot', dof: '2 DOF', name: 'Leher', en: 'Neck · 2-DoF actuated (Gen 2)',
+    role: 'Mengarahkan kepala dan kamera tanpa memutar seluruh badan. Ditambahkan di Gen 2.',
+    steps: ['Satu aktuator memutar kepala kiri-kanan (yaw), satu lagi mengangguk (pitch).',
+      'Gerak kepala memberi kamera sudut pandang baru, sehingga jarak bisa diperkirakan dari paralaks.',
+      'Estimator posisi harus tahu bahwa gambar bergeser karena leher bergerak, bukan karena dunia bergerak. Sudut leher dari encoder dipakai untuk koreksi itu.'],
+    specs: [['DOF', '2 (Gen 2, 2023)', 'R'], ['Gen 1 (2022)', 'Leher tidak diaktuasi', 'L'], ['Jenis aktuator', 'Rotari kecil', 'I'], ['Beban', 'Kepala ± 2–3 kg', 'I'], ['Encoder', 'Absolut di sisi output', 'I']],
+    ind: ['Guncangan tiap langkah membuat gambar kamera goyang dan kabur.', 'Stabilisasi aktif: leher melawan guncangan memakai data IMU, mirip refleks mata manusia.'],
+    links: ['kepala', 'bahu'],
+    chart: ['rotary', 'Strain wave gear kecil', 'Motor memutar wave generator elips. Flexspline menyentuh gigi luar hanya di dua titik dan bergeser satu-dua gigi per putaran. Jumlah gigi diperkecil agar terbaca.'],
+    view: { az: -30, el: 5, r: 0.7 }, anchor: [-0.05, 1.71, 0.02] },
+  { id: 'bahu', grp: 'Lengan', type: 'rot', dof: '3 DOF', name: 'Bahu', en: 'Shoulder · 3 rotary actuators',
+    role: 'Sendi bola buatan. Tiga aktuator rotari bertumpuk memberi gerak angkat, buka-tutup, dan putar lengan.',
+    steps: ['Motor PMSM tanpa rangka (frameless) berputar ribuan rpm dengan torsi kecil, sekitar 1–2 Nm.',
+      'Strain wave gear (harmonic drive) menurunkan putaran sekitar 100 kali dan melipatgandakan torsi sekitar 100 kali dalam satu tahap yang tipis.',
+      'Encoder di sisi motor dan sisi output mengukur sudut. Selisih keduanya menunjukkan puntiran gigi saat terbebani.',
+      'Tiga sumbu disusun berurutan (pitch, roll, yaw) sehingga titik potongnya mendekati pusat sendi bahu manusia.'],
+    specs: [['DOF', '3 per bahu', 'L'], ['Jenis', 'PMSM + strain wave', 'R'], ['Kelas torsi', '110 / 180 Nm', 'I'], ['Massa aktuator 180 Nm', '2,26 kg', 'R'], ['Sensor', 'Encoder input + output', 'L'], ['Driver', 'Inverter 3-fasa lokal, FOC', 'I']],
+    ind: ['Strain wave gear mahal karena flexspline harus presisi, dan giginya mudah rusak oleh benturan.', 'Pemasok Tiongkok menekan harga; sebagian pembuat humanoid beralih ke planetary rasio rendah (quasi-direct drive) yang lebih tahan benturan.'],
+    links: ['siku', 'baterai'],
+    chart: ['rotary', 'Strain wave gear', 'Wave generator (elips) berputar cepat; flexspline (ungu) ikut berputar pelan ke arah sebaliknya. Titik merah = output. Rasio asli ± 100 : 1; gigi diperkecil agar terbaca.'],
+    view: { az: 45, el: 10, r: 0.75 }, anchor: [0.19, 1.57, 0] },
+  { id: 'siku', grp: 'Lengan', type: 'lin', dof: '1 DOF', name: 'Siku', en: 'Elbow · linear actuator',
+    role: 'Menekuk lengan bawah. Memakai aktuator linear yang mendorong tuas, seperti otot bisep.',
+    steps: ['Rotor motor berlubang (hollow) memutar mur roller screw.',
+      'Rol-rol berulir di dalam mur mengubah putaran menjadi gerak lurus batang ulir, maju atau mundur.',
+      'Batang mendorong tuas di siku. Torsi sendi = gaya × lengan momen, dan lengan momen berubah mengikuti sudut siku.',
+      'Sensor gaya di ujung batang mengukur beban, sehingga siku bisa dibuat lunak saat bersentuhan dengan manusia.'],
+    specs: [['DOF', '1 per siku', 'R'], ['Jenis', 'PMSM + planetary roller screw', 'L'], ['Kelas gaya', '3.900 N · 0,93 kg', 'I'], ['Torsi sendi', '± 3.900 N × 3–4 cm ≈ 120–150 Nm', 'I'], ['Sensor', 'Posisi + gaya', 'L']],
+    ind: ['Planetary roller screw butuh penggerindaan ulir presisi mikron. Kapasitas produksinya kecil dan harganya tinggi.', 'Inverted roller screw buatan massal, penggerindaan otomatis, pemasok baru di Tiongkok dan Eropa.'],
+    links: ['bahu', 'pergelangan'],
+    chart: ['linear', 'Planetary roller screw', 'Mur berputar di dalam stator, rol meneruskan putaran ke ulir, batang bergerak lurus. Gaya = 2π × efisiensi × torsi motor ÷ lead.'],
+    view: { az: -60, el: 5, r: 0.75 }, anchor: [-0.25, 1.30, 0] },
+  { id: 'pergelangan', grp: 'Lengan', type: 'mix', dof: '3 DOF', short: 'Pergelangan', name: 'Lengan Bawah & Pergelangan', en: 'Forearm · wrist roll + pitch/yaw',
+    role: 'Memutar telapak dan menekuk pergelangan. Dua aktuator linear kecil di lengan bawah bekerja seperti tendon.',
+    steps: ['Aktuator rotari kelas 20 Nm memutar pergelangan (roll), seperti gerak memutar kenop pintu.',
+      'Dua aktuator linear kelas 500 N sejajar di lengan bawah. Maju bersama: pergelangan menekuk (pitch). Berlawanan: pergelangan miring (yaw).',
+      'Dua aktuator untuk dua sumbu disebut mekanisme paralel: lebih kaku, dan bebannya terbagi.',
+      'Motor diletakkan di lengan bawah, bukan di pergelangan, agar ujung lengan ringan dan cepat diayun.'],
+    specs: [['DOF', '3 (1 rotari + 2 linear)', 'L'], ['Kelas', '20 Nm · 500 N', 'I'], ['Massa aktuator 500 N', '0,36 kg', 'R'], ['V3 (paten)', 'Motor jari pindah ke lengan bawah', 'L']],
+    ind: ['Paten V3 membahas crosstalk: menekuk pergelangan ikut menarik tendon jari.', 'Perutean tendon lewat pusat sendi pergelangan supaya panjangnya tidak berubah saat pergelangan bergerak.'],
+    links: ['siku', 'tangan'],
+    chart: ['linear2', 'Dua aktuator paralel', 'Selisih panjang kedua batang memiringkan pelat (roll/yaw); rata-ratanya menekuk (pitch). Mode berganti perlahan.'],
+    view: { az: 60, el: 5, r: 0.7 }, anchor: [0.245, 1.18, 0.07] },
+  { id: 'tangan', grp: 'Lengan', type: 'fin', dof: '11 DOF', short: 'Tangan', name: 'Tangan & Jari', en: 'Hand · 11 DoF, 6 actuators (Gen 2) → 22 DoF (V3)',
+    role: 'Bagian tersulit menurut Musk. Harus kuat mengangkat tas 9 kg, tapi cukup halus memegang telur.',
+    steps: ['Gen 1/2: enam motor kecil di telapak menggerakkan 11 DOF. Beberapa ruas jari dikopel, jadi satu motor menggerakkan lebih dari satu ruas (underactuated).',
+      'Motor memutar roda gigi cacing (worm gear). Worm tidak bisa diputar balik dari sisi jari, sehingga genggaman terkunci tanpa memakai listrik.',
+      'Tendon logam menarik ruas jari; pegas mengembalikannya.',
+      'Gen 2 menambah sensor taktil di semua ujung jari. Paten V3: 22 DOF per tangan, motor dipindah ke lengan bawah dan menarik tendon melewati pergelangan.'],
+    specs: [['DOF (Gen 1/2)', '11 per tangan', 'R'], ['Aktuator (Gen 1/2)', '6 per tangan', 'R'], ['Beban', 'Tas 9 kg (20 lb)', 'R'], ['Taktil', 'Semua ujung jari (Gen 2)', 'R'], ['Penggerak', 'Worm gear, non-backdrivable', 'R'], ['V3', '22 DOF + 3 di pergelangan', 'L']],
+    ind: ['Tendon molor atau putus, jari tipis tapi harus kuat, sensor taktil cepat aus, kabel melewati banyak sendi.', 'Motor di lengan bawah (V3), kulit taktil yang bisa diganti, model AI yang belajar manipulasi dari video tangan manusia.'],
+    links: ['pergelangan', 'komputer'],
+    chart: ['hand', 'Worm gear + tendon', 'Motor memutar worm; worm memutar roda; roda menarik tendon; jari menekuk. Jari berhenti saat sensor taktil di ujung merasakan tekanan.'],
+    view: { az: -75, el: 10, r: 0.75 }, anchor: [-0.30, 1.01, 0.06] },
+  { id: 'baterai', grp: 'Torso', type: 'pwr', dof: '2,3 kWh', short: 'Baterai', name: 'Paket Baterai', en: '2.3 kWh · 52 V integrated pack',
+    role: 'Seluruh energi robot ada di dada: sel, BMS, distribusi daya, dan pendinginan dalam satu paket.',
+    steps: ['Sel litium-ion disusun seri sampai sekitar 52 V. 52 V ÷ 3,7 V per sel ≈ 14 sel seri.',
+      'BMS mengukur tegangan tiap kelompok sel, suhu, dan arus, lalu memutus sistem jika ada gangguan.',
+      'Daya dibagi ke empat puluhan aktuator dan komputer. 52 V cukup tinggi agar arus kecil (kabel tipis), tapi di bawah batas tegangan sentuh aman sekitar 60 V DC.',
+      'Diletakkan di torso: massa terberat dekat pusat gravitasi, jadi keseimbangan lebih mudah dijaga.'],
+    specs: [['Energi', '2,3 kWh', 'R'], ['Tegangan', '52 V', 'R'], ['Konfigurasi', '≈ 14s', 'I'], ['Kapasitas', '≈ 44 Ah', 'I'], ['Duduk diam', '≈ 100 W', 'R'], ['Jalan cepat', '≈ 500 W', 'R']],
+    ind: ['2,3 kWh ÷ 500 W ≈ 4,6 jam jalan, sedangkan satu shift pabrik 8 jam.', 'Dok pengisian otomatis, baterai tukar, aktuator lebih efisien, energi kembali saat menurunkan beban.'],
+    links: ['komputer', 'pinggang'],
+    chart: ['battery', 'Waktu kerja per aktivitas', 'Batang penuh = daya resmi Tesla; arsir = estimasi. Waktu = 2.300 Wh × 0,9 ÷ daya. Sel ikut mengosong sesuai simulasi di kiri.'],
+    view: { az: 20, el: 6, r: 0.95 }, anchor: [0.07, 1.43, 0.08] },
+  { id: 'komputer', grp: 'Torso', type: 'sig', dof: 'SoC', short: 'Komputer', name: 'Komputer Pusat', en: 'Tesla SoC · FSD computer lineage',
+    role: 'Otak robot di torso. Menjalankan jaringan saraf visi, perencanaan gerak, dan kontrol keseimbangan.',
+    steps: ['Video kamera masuk ke ISP, lalu ke NPU, akselerator yang mengerjakan ribuan perkalian-penjumlahan per siklus clock.',
+      'CPU ARM menjalankan perencanaan, estimasi posisi tubuh, dan logika keselamatan.',
+      'Hasilnya berupa target posisi atau torsi tiap sendi, dikirim lewat bus data ke driver motor ratusan kali per detik.',
+      'Komputer yang sama menangani Wi-Fi/LTE untuk telemetri dan pembaruan software.'],
+    specs: [['Gen 1 (2022)', '1 × Tesla SoC (FSD)', 'R'], ['NPU (chip FSD)', '2 × 36,9 TOPS INT8', 'R'], ['CPU (chip FSD)', '12 × Cortex-A72', 'R'], ['Konektivitas', 'Wi-Fi + LTE', 'R'], ['Gen 2/3', 'Tidak dirilis (diduga AI4)', 'I'], ['AI5', 'Saat produksi volume, ± 2027', 'L']],
+    ind: ['Komputasi bersaing dengan baterai: 100 W untuk komputer setara 20 % daya berjalan.', 'Chip AI5, model dua tingkat (besar-lambat + kecil-cepat), kuantisasi ke INT8/FP4.'],
+    links: ['kepala', 'baterai'],
+    chart: ['compute', 'Jalur data di chip', 'Paket data dari kamera melewati ISP, NPU, CPU, lalu keluar ke bus aktuator.'],
+    view: { az: -20, el: 4, r: 0.85 }, anchor: [-0.06, 1.255, 0.06] },
+  { id: 'pinggang', grp: 'Torso', type: 'rot', dof: '2 DOF', name: 'Pinggang', en: 'Waist · 2 rotary actuators',
+    role: 'Memutar dan membungkukkan badan atas, misalnya mengambil barang di samping tanpa melangkah.',
+    steps: ['Dua aktuator rotari kelas terbesar menahan berat badan atas plus beban di tangan.',
+      'Saat membungkuk, torsi pinggang = berat × jarak horizontal ke sendi. Beban 20 kg di jarak 0,4 m saja sudah ± 80 Nm, belum termasuk badan atas.',
+      'Kontrol seluruh tubuh menggerakkan pinggang bersama pinggul supaya pusat massa tetap di atas telapak kaki.'],
+    specs: [['DOF', '2', 'R'], ['Jenis', 'Rotari', 'L'], ['Kelas torsi', '180 Nm', 'I'], ['Massa aktuator', '2,26 kg', 'R']],
+    ind: ['Menahan posisi diam tetap menghabiskan arus: motor panas walau tidak bergerak.', 'Rem atau kopling mekanis yang mengunci saat diam, motor dengan kepadatan torsi lebih tinggi.'],
+    links: ['baterai', 'pinggul'],
+    chart: ['rotary', 'Strain wave gear · menahan beban', 'Saat menahan beban diam, arus tetap mengalir untuk menghasilkan torsi. Rugi panas I²R naik dengan kuadrat torsi.'],
+    view: { az: 30, el: 6, r: 0.95 }, anchor: [0.09, 1.12, 0.04] },
+  { id: 'pinggul', grp: 'Kaki', type: 'mix', dof: '3 DOF', name: 'Pinggul', en: 'Hip · 2 rotary + 1 linear',
+    role: 'Sendi paling sibuk saat berjalan: mengayun kaki, membuka ke samping, dan memutar arah.',
+    steps: ['Yaw (putar arah) dan roll (buka-tutup ke samping) memakai aktuator rotari.',
+      'Pitch (ayun maju-mundur), yang butuh tenaga paling besar, memakai aktuator linear yang mendorong tuas paha.',
+      'Saat satu kaki terangkat, pinggul kaki tumpu menahan seluruh berat badan agar panggul tidak miring.',
+      'Slide AI Day 2022 menunjukkan kopling mekanis di aktuator rotari, untuk melindungi gigi dari beban kejut.'],
+    specs: [['DOF', '3 per sisi', 'R'], ['Komposisi', '2 rotari + 1 linear', 'L'], ['Kelas', '110–180 Nm · 8.000 N', 'I'], ['Pelindung', 'Kopling mekanis', 'L']],
+    ind: ['Benturan saat kaki menapak atau saat jatuh merusak gigi reduksi.', 'Kopling slip, elemen elastis, dan kebijakan jalan hasil reinforcement learning yang menapak lebih lembut.'],
+    links: ['pinggang', 'lutut'],
+    chart: ['gait', 'Sudut sendi dalam satu siklus langkah', 'Kurva gaya berjalan manusia, disederhanakan. Garis vertikal = fase sekarang. Pilih “Jalan” di kiri untuk mengikuti simulasi.'],
+    view: { az: -35, el: 5, r: 1.0 }, anchor: [-0.09, 0.93, 0.04] },
+  { id: 'lutut', grp: 'Kaki', type: 'lin', dof: '1 DOF', name: 'Lutut', en: 'Knee · 8,000 N linear + four-bar linkage',
+    role: 'Sendi dengan beban terbesar. Aktuator linear terkuat Optimus ada di sini.',
+    steps: ['Aktuator linear di paha mendorong mekanisme empat batang (four-bar linkage) di lutut, meniru bentuk tulang dan ligamen lutut manusia.',
+      'Linkage membuat lengan momen membesar saat lutut menekuk dalam (jongkok, naik tangga), tepat saat torsi paling dibutuhkan.',
+      'Kelas 8.000 N setara ± 815 kgf. Di AI Day 2022 aktuator ini didemokan mengangkat piano setengah ton.',
+      'Saat menuruni tangga, lutut bekerja sebagai rem. Secara prinsip energinya bisa dikembalikan ke baterai.'],
+    specs: [['DOF', '1 per lutut', 'R'], ['Gaya maks.', '8.000 N', 'R'], ['Massa aktuator', '2,2 kg', 'R'], ['Mekanisme', 'Four-bar ala lutut manusia', 'R'], ['Torsi sendi', '≈ 200–400 Nm', 'I']],
+    ind: ['Roller screw sulit diputar balik dari luar, jadi lutut kaku saat benturan; panas saat jongkok lama.', 'Lead ulir lebih besar (lebih mudah diputar balik), kontrol impedansi, pendinginan aktuator.'],
+    links: ['pinggul', 'pergkaki'],
+    chart: ['knee', 'Torsi lutut vs sudut tekuk', 'Merah: dengan four-bar linkage. Abu: tuas tetap. Garis putus: kebutuhan torsi jongkok membawa 20 kg. Kurva ilustratif.'],
+    view: { az: 50, el: 5, r: 0.85 }, anchor: [0.175, 0.534, 0.1] },
+  { id: 'pergkaki', grp: 'Kaki', type: 'lin', dof: '2 DOF', short: 'Engkel', name: 'Pergelangan Kaki', en: 'Ankle · 2 parallel linear actuators',
+    role: 'Menjaga keseimbangan halus dengan menekan jari kaki atau tumit untuk menggeser titik tumpu.',
+    steps: ['Dua aktuator linear di betis, mirip otot betis kiri-kanan, mendorong batang ke telapak.',
+      'Bergerak searah: pitch (jinjit atau tumit). Berlawanan: roll (miring kiri-kanan).',
+      'Motor di betis, bukan di pergelangan, mengurangi massa ujung kaki sehingga ayunan langkah lebih hemat energi.',
+      'Saat didorong, kontroler keseimbangan pertama-tama memakai pergelangan kaki untuk menggeser titik tekan di telapak.'],
+    specs: [['DOF', '2 per kaki', 'R'], ['Jenis', '2 linear paralel', 'L'], ['Kelas', '3.900 N', 'I'], ['Sensor', 'Posisi + gaya', 'L']],
+    ind: ['Benturan tiap langkah (dua sampai tiga kali berat badan) menghantam ulir dan bantalan.', 'Elemen elastis seri dan bantalan yang lebih tahan benturan.'],
+    links: ['lutut', 'telapak'],
+    chart: ['linear2', 'Dua aktuator paralel', 'Searah = pitch, berlawanan = roll. Mode berganti perlahan.'],
+    view: { az: -55, el: 10, r: 0.75 }, anchor: [-0.141, 0.11, -0.04] },
+  { id: 'telapak', grp: 'Kaki', type: 'sen', dof: 'F/T', short: 'Telapak', name: 'Telapak Kaki', en: 'Foot · force/torque sensing · articulated toe',
+    role: 'Satu-satunya kontak robot dengan lantai. Sensor di sini memberi tahu di mana berat badan bertumpu.',
+    steps: ['Sensor gaya/torsi mengukur gaya tekan, gaya geser, dan momen di telapak.',
+      'Dari situ dihitung center of pressure (CoP). Selama CoP berada di dalam area tumpuan kaki, robot tidak terguling. Inilah prinsip ZMP.',
+      'Gen 2 menambah ruas jari kaki, sehingga tumit bisa terangkat saat melangkah. Langkah jadi lebih panjang dan alami.'],
+    specs: [['Sensor', 'Gaya/torsi kaki (Gen 2)', 'R'], ['Jari kaki', 'Beruas (Gen 2)', 'R'], ['Geometri', 'Mirip telapak manusia', 'R'], ['Sol', 'Karet, bisa diganti', 'I']],
+    ind: ['Lantai pabrik licin, berminyak, atau tidak rata; sensor gaya/torsi mahal dan peka suhu.', 'Estimasi kontak dari arus motor (tanpa sensor), sol yang bisa diganti, kebijakan jalan yang dilatih di simulasi.'],
+    links: ['pergkaki', 'pinggul'],
+    chart: ['foot', 'Center of pressure', 'Tampak atas. Area putus-putus = poligon tumpuan. Titik merah = CoP; titik gelap = proyeksi pusat massa.'],
+    view: { az: 40, el: 28, r: 0.8 }, anchor: [0.25, 0.025, 0.15] },
+];
+const P = Object.fromEntries(PARTS.map(p => [p.id, p]));
+const GROUPS = [...new Set(PARTS.map(p => p.grp))];
+
+// activity model. P in W. conf R = Tesla figure; I = estimate
+const ACT = {
+  diam: { name: 'Duduk diam', P: 100, conf: 'R', motion: 0.05, knee: () => 3,
+    load: { leher: .08, bahu: .05, siku: .05, pergelangan: .03, tangan: 0, pinggang: .12, pinggul: .05, lutut: .02, pergkaki: .02 } },
+  berdiri: { name: 'Berdiri', P: 150, conf: 'I', motion: 0.12, knee: () => 22,
+    load: { leher: .08, bahu: .08, siku: .06, pergelangan: .04, tangan: .02, pinggang: .2, pinggul: .25, lutut: .3, pergkaki: .3 } },
+  jalan: { name: 'Jalan cepat', P: 500, conf: 'R', motion: 1, knee: ph => 35 + 75 * Math.max(Math.exp(-(((ph - .14) / .08) ** 2)), .55 * Math.exp(-(((ph - .64) / .1) ** 2))),
+    load: { leher: .15, bahu: .25, siku: .15, pergelangan: .08, tangan: .05, pinggang: .35, pinggul: .75, lutut: .7, pergkaki: .7 } },
+  angkat: { name: 'Angkat 20 kg', P: 650, conf: 'I', motion: 0.5, knee: (ph, t) => 60 + 110 * (0.5 - 0.5 * Math.cos(t * 1.1)),
+    load: { leher: .1, bahu: .55, siku: .65, pergelangan: .45, tangan: .8, pinggang: .8, pinggul: .65, lutut: .75, pergkaki: .45 } },
+  telur: { name: 'Pegang telur', P: 130, conf: 'I', motion: 0.2, knee: () => 20,
+    load: { leher: .12, bahu: .15, siku: .15, pergelangan: .25, tangan: .2, pinggang: .15, pinggul: .2, lutut: .25, pergkaki: .25 } },
+};
+
+const CHAIN = [
+  ['kamera', 'Kamera', '30–60 Hz', ['kepala'], 'Kamera merekam video dan mengirimnya ke torso. Optimus tidak memakai LiDAR.'],
+  ['npu', 'NPU', 'TOPS', ['komputer'], 'NPU di SoC menjalankan jaringan saraf visi: dari piksel ke gambaran 3D dan posisi benda.'],
+  ['policy', 'Kebijakan AI', '10–100 Hz', ['komputer'], 'Jaringan saraf memutuskan gerak berikutnya dari gambar dan keadaan tubuh.'],
+  ['wbc', 'Kontrol tubuh', '0,5–1 kHz', ['komputer', 'telapak'], 'Kontrol seluruh tubuh menjaga keseimbangan dan membagi torsi ke tiap sendi, memakai IMU dan sensor kaki.'],
+  ['bus', 'Bus data', '≈ 1 kHz', ['komputer'], 'Target posisi/torsi dikirim ke tiap aktuator lewat bus data (jenisnya tidak dirilis).'],
+  ['foc', 'Driver FOC', '10–40 kHz', ['bahu', 'siku', 'pinggul', 'lutut'], 'Mikrokontroler di aktuator mengatur arus 3-fasa motor puluhan ribu kali per detik.'],
+  ['motor', 'Motor PMSM', 'ribuan rpm', ['bahu', 'lutut'], 'Magnet NdFeB di rotor ditarik medan putar stator. Torsinya kecil, putarannya cepat.'],
+  ['reduksi', 'Reduksi', '× 100 · ulir', ['bahu', 'lutut'], 'Strain wave gear atau roller screw menukar kecepatan menjadi torsi atau gaya besar.'],
+  ['sendi', 'Sendi', 'Nm · N', ['pinggul', 'lutut', 'pergkaki'], 'Sendi bergerak; tuas dan linkage menentukan torsi akhirnya.'],
+  ['sensor', 'Encoder · F/T', 'umpan balik', ['telapak', 'tangan'], 'Encoder, sensor gaya, sensor kaki, dan taktil jari mengirim balik keadaan nyata. Lingkaran kendali tertutup.'],
+];
+
+const RATES = [
+  ['Perencanaan tugas', 1, 10, 'I', '1–10 Hz', 'var(--ink-3)'],
+  ['Helix S2 (Figure, VLM)', 7, 9, 'R', '7–9 Hz', 'var(--sig)'],
+  ['Kebijakan AI visi → aksi', 10, 100, 'I', '10–100 Hz', 'var(--accent)'],
+  ['Kamera', 30, 60, 'I', '30–60 Hz', 'var(--sen)'],
+  ['Helix S1 (Figure)', 200, 200, 'R', '200 Hz', 'var(--sig)'],
+  ['Kontrol seluruh tubuh', 500, 1000, 'I', '0,5–1 kHz', 'var(--rot)'],
+  ['Loop posisi/torsi sendi', 1000, 4000, 'I', '1–4 kHz', 'var(--lin)'],
+  ['Loop arus FOC', 10000, 40000, 'I', '10–40 kHz', 'var(--pwr)'],
+  ['Switching PWM', 20000, 100000, 'I', '20–100 kHz', 'var(--hot)'],
+];
+
+const PBARS = [['Duduk diam', 100, 'R'], ['Pegang telur', 130, 'I'], ['Berdiri', 150, 'I'], ['Jalan cepat', 500, 'R'], ['Angkat 20 kg', 650, 'I']];
+
+const CARDS = [
+  ['Tangan & dexteritas', 'L', '11 DOF / 6 aktuator (Gen 2) → 22 DOF per tangan (paten V3)', 'Musk menyebut tangan sebagai bagian teknik tersulit. Jari harus kuat dan halus sekaligus; tendon molor, sensor taktil aus, dan setiap ruas menambah titik gagal.', 'Motor dipindah ke lengan bawah dan menarik tendon (V3), kulit taktil yang bisa diganti, data manipulasi dari video tangan manusia.'],
+  ['Biaya & presisi aktuator', 'L', '28 aktuator struktural per robot · target Musk US$20–30 rb per unit vs perkiraan biaya saat ini US$50–100 rb', 'Roller screw dan strain wave gear butuh penggerindaan presisi mikron. Keduanya bagian termahal robot dan kapasitas pabriknya kecil.', 'Rantai pasok Tiongkok untuk aktuator, penggerindaan otomatis, desain inverted roller screw, pemakaian ulang enam desain aktuator.'],
+  ['Magnet tanah jarang', 'L', '± 3,5 kg NdFeB per robot · pemrosesan didominasi Tiongkok · pembatasan ekspor April 2025', 'Setiap motor butuh magnet NdFeB, sering dengan dysprosium untuk tahan panas. Musk menyebut pembatasan ekspor menunda proyek beberapa bulan.', 'Pabrik magnet di luar Tiongkok (mis. USA Rare Earth di Oklahoma, 2026), magnet tanpa dysprosium, riset motor tanpa tanah jarang.'],
+  ['Energi & waktu kerja', 'R', '2,3 kWh · ≈ 500 W saat jalan cepat → ± 4 jam; shift pabrik 8 jam', 'Menambah sel menambah berat, dan berat menambah kebutuhan torsi semua sendi. Komputer juga menyedot porsi besar saat robot diam.', 'Dok pengisian otomatis, baterai yang bisa ditukar, aktuator lebih efisien, chip AI dengan performa per watt lebih tinggi.'],
+  ['Komputasi on-board', 'L', 'AI5 baru masuk Optimus saat produksi volume (± 2027)', 'Model visi-bahasa-aksi besar butuh komputasi yang tidak muat di anggaran daya robot.', 'Arsitektur dua tingkat: model besar lambat untuk memahami tugas, model kecil cepat untuk gerak; kuantisasi INT8/FP4.'],
+  ['Data & pembelajaran', 'L', 'Teleoperasi: satu operator per robot · laporan 2025: beralih ke video manusia', 'Mengumpulkan contoh gerak lewat teleoperasi mahal dan lambat. Video manusia murah, tapi tangan manusia berbeda dari tangan robot.', 'Pelatihan dari video, simulasi skala besar (sim-to-real), data armada robot yang bekerja di pabrik Tesla.'],
+  ['Keselamatan & standar', 'L', 'ISO 10218 (robot industri, revisi 2025) · ISO 25785-1 untuk robot berkaki: masih dikembangkan', 'Robot berkaki yang menyeimbangkan diri secara dinamis belum punya standar final. Robot 60–70 kg yang jatuh di dekat pekerja adalah risiko nyata.', 'Perilaku jatuh terkendali, batas gaya dan kecepatan di dekat manusia, zona kerja terpisah selama standar belum final.'],
+  ['Panas & keandalan', 'I', 'Torsi diam terus-menerus · benturan 2–3× berat badan tiap langkah', 'Motor panas saat menahan beban walau tidak bergerak. Gigi dan ulir menerima beban kejut. Umur pakai ribuan jam belum terbukti di lapangan.', 'Pendinginan aktuator, kopling slip, desain modular yang mudah diservis, pemantauan kondisi dari data motor.'],
+];
+
+/* ================= theme tokens ================= */
+let C = {};
+function readTokens() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['bg', 'panel-solid', 'ink', 'ink-2', 'ink-3', 'line', 'accent', 'rot', 'lin', 'fin', 'sen', 'pwr', 'sig', 'hot', 'metal']) C[k] = cs.getPropertyValue('--' + k).trim() || '#888';
+}
+function rgba(hex, a) {
+  let h = hex.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+const isDark = () => { const h = C.bg.replace('#', ''); const n = parseInt(h, 16); return ((n >> 16 & 255) + (n >> 8 & 255) + (n & 255)) / 3 < 100; };
+readTokens();
+
+/* ================= shared state ================= */
+const S = { act: 'jalan', sel: 'lutut', hover: null, soc: 0.82, P: 0, Pn: 0, I: 0, V: 52, tk: 0, temp: 34, phase: 0, t: 0, hist: [],
+  shell: 'xray', cam: 'depan', ov: { labels: true, power: true, data: true, isolate: false }, chainSel: null, chainHi: [], tab: 'anatomi', ui: true };
+const K = 1.73 / 1.977; // scale model to 173 cm
+const WARP = 60;
+
+/* ================= 3D ================= */
+let THREE, OrbitControls, GLTFLoader, RoomEnvironment;
+let renderer, scene, camera, controls, root, shellMesh, shellMats = {}, ready3D = false;
+const PM = {}; // part -> {meshes:[], anchor:Vector3}
+const ROT = [], RODS = [], FLOWS = [], MATS = [], HITS = [];
+let tween = null;
+
+const J = {
+  head: [-0.01, 1.87, 0.07], neck: [0, 1.715, 0.0], chest: [0, 1.42, 0.025], waist: [0, 1.13, 0.0], pelvis: [0, 0.99, 0.0],
+  shL: [-0.172, 1.565, 0.0], shR: [0.174, 1.57, 0.005], elL: [-0.25, 1.30, -0.007], elR: [0.236, 1.304, 0.025],
+  wrL: [-0.271, 1.116, 0.049], wrR: [0.239, 1.118, 0.093], haL: [-0.298, 1.035, 0.06], haR: [0.266, 1.04, 0.103],
+  hiL: [-0.088, 0.95, 0.02], hiR: [0.092, 0.95, 0.03], knL: [-0.132, 0.535, 0.05], knR: [0.175, 0.534, 0.08],
+  anL: [-0.141, 0.11, -0.04], anR: [0.224, 0.11, 0.03], ftL: [-0.15, 0.03, 0.02], ftR: [0.25, 0.03, 0.11],
+};
+
+function V(a) { return new THREE.Vector3(a[0], a[1], a[2]); }
+function mix(a, b, t) { return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)]; }
+function add(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+function regMat(key, o = {}) {
+  const m = new THREE.MeshStandardMaterial({ color: C[key], metalness: key === 'metal' ? .7 : .25, roughness: key === 'metal' ? .38 : .5, ...o });
+  m.userData.key = key; MATS.push({ m, key }); return m;
+}
+function reg(part, ...meshes) {
+  (PM[part] ??= { meshes: [] }).meshes.push(...meshes);
+  for (const m of meshes) { m.userData.part = part; m.userData.baseOpacity = 1; }
+}
+const UP = () => new THREE.Vector3(0, 1, 0);
+
+function rotary(part, pos, axis, r, len) {
+  const g = new THREE.Group(); g.position.copy(V(pos));
+  g.quaternion.setFromUnitVectors(UP(), V(axis).normalize());
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 28), regMat('metal'));
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.05, r * 1.05, len * .34, 28), regMat('rot'));
+  const spin = new THREE.Group();
+  const mark = new THREE.Mesh(new THREE.BoxGeometry(r * 1.55, len * 1.06, r * .2), regMat('rot'));
+  spin.add(mark); g.add(body, band, spin); root.add(g);
+  reg(part, body, band, mark); ROT.push({ spin, part, k: 0.6 + Math.random() * .3 });
+}
+function linear(part, a, b, r, phase = 0) {
+  const A = V(a), B = V(b), dir = B.clone().sub(A), L = dir.length(); dir.normalize();
+  const g = new THREE.Group(); g.position.copy(A); g.quaternion.setFromUnitVectors(UP(), dir);
+  const mL = L * .45;
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, mL, 24), regMat('metal')); body.position.y = mL / 2;
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.07, r * 1.07, mL * .38, 24), regMat('lin')); band.position.y = mL * .55;
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(r * .42, r * .42, 1, 12), regMat('ink-2', { metalness: .8, roughness: .3 }));
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(r * .62, 14, 10), regMat('lin'));
+  g.add(body, band, rod, tip); root.add(g);
+  reg(part, body, band, rod, tip); RODS.push({ rod, tip, mL, span: L - mL, part, phase });
+}
+function pin(part, pos, axis, r, len) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 16), regMat('metal'));
+  m.position.copy(V(pos)); m.quaternion.setFromUnitVectors(UP(), V(axis).normalize()); root.add(m); reg(part, m);
+}
+function box(part, key, pos, size, o) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(...size), regMat(key, o)); m.position.copy(V(pos)); root.add(m); reg(part, m); return m;
+}
+function ball(part, key, pos, r) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 8), regMat(key)); m.position.copy(V(pos)); root.add(m); reg(part, m); return m;
+}
+
+function buildInternals() {
+  // head sensors
+  box('kepala', 'ink-2', [-0.01, 1.875, 0.135], [0.075, 0.026, 0.022]);
+  for (const dx of [-0.024, 0, 0.024]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.0075, 0.0075, 0.012, 16), regMat('sen')); c.position.set(-0.01 + dx, 1.875, 0.149); c.rotation.x = Math.PI / 2; root.add(c); reg('kepala', c); }
+  ball('kepala', 'sen', [-0.08, 1.86, 0.06], 0.007); ball('kepala', 'sen', [0.06, 1.86, 0.06], 0.007);
+  // neck
+  rotary('leher', [0, 1.725, 0], [0, 1, 0], 0.024, 0.03);
+  rotary('leher', [0, 1.775, 0.01], [1, 0, 0], 0.02, 0.05);
+  // shoulders, elbows, forearms, hands
+  for (const s of ['L', 'R']) {
+    const sg = s === 'L' ? -1 : 1, sh = J['sh' + s], el = J['el' + s], wr = J['wr' + s], ha = J['ha' + s];
+    rotary('bahu', add(sh, [sg * -0.012, 0.01, 0]), [1, 0, 0], 0.036, 0.045);
+    rotary('bahu', add(sh, [sg * 0.03, -0.022, 0]), [0, 0, 1], 0.032, 0.045);
+    const ua = [el[0] - sh[0], el[1] - sh[1], el[2] - sh[2]];
+    rotary('bahu', mix(sh, el, 0.3), ua, 0.028, 0.04);
+    linear('siku', add(mix(sh, el, 0.42), [0, 0, -0.018]), add(el, [0, 0.02, -0.022]), 0.014, s === 'L' ? 0 : Math.PI);
+    pin('siku', el, [1, 0, 0], 0.016, 0.05);
+    const fa = [wr[0] - el[0], wr[1] - el[1], wr[2] - el[2]];
+    rotary('pergelangan', mix(el, wr, 0.22), fa, 0.022, 0.03);
+    linear('pergelangan', add(mix(el, wr, 0.42), [0.011, 0, 0]), add(wr, [0.011, 0.012, 0]), 0.008, 0);
+    linear('pergelangan', add(mix(el, wr, 0.42), [-0.011, 0, 0]), add(wr, [-0.011, 0.012, 0]), 0.008, 1.3);
+    // hand: 6 mini actuators + tendons + tactile tips
+    for (let i = 0; i < 6; i++) {
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.028, 12), regMat('fin'));
+      m.position.copy(V(add(ha, [sg * -0.004 + (i % 2) * 0.008 * sg, 0.03 - Math.floor(i / 2) * 0.004, -0.02 + Math.floor(i / 2) * 0.018]))); root.add(m); reg('tangan', m);
+      ROT.push({ spin: m, part: 'tangan', k: 1.2 });
+    }
+    const tips = [-0.03, -0.012, 0.006, 0.024].map(dz => add(ha, [sg * 0.004, -0.075, dz])); tips.push(add(ha, [sg * -0.012, -0.03, 0.045]));
+    const pts = [];
+    tips.forEach((tp, i) => { pts.push(V(add(ha, [0, 0.02, -0.02 + (i % 3) * 0.018])), V(tp)); ball('tangan', 'sen', tp, 0.005); });
+    const tg = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: C.fin, transparent: true, opacity: .9 }));
+    MATS.push({ m: tg.material, key: 'fin' }); root.add(tg);
+  }
+  // torso: battery with cell slabs + BMS, compute board, IMU
+  box('baterai', 'pwr', [0, 1.415, 0.02], [0.2, 0.19, 0.085], { metalness: .2, roughness: .6 });
+  for (let i = 1; i < 14; i++) box('baterai', 'ink-2', [-0.1 + i * 0.2 / 14, 1.415, 0.0635], [0.002, 0.18, 0.002]);
+  box('baterai', 'sig', [0, 1.525, 0.02], [0.12, 0.025, 0.05]);
+  box('komputer', 'sig', [0, 1.255, 0.025], [0.15, 0.1, 0.012]);
+  box('komputer', 'ink', [0, 1.255, 0.034], [0.045, 0.045, 0.006]);
+  for (let i = 0; i < 7; i++) box('komputer', 'metal', [-0.06 + i * 0.02, 1.255, 0.008], [0.004, 0.09, 0.022]);
+  box('komputer', 'sen', [0.05, 1.22, 0.034], [0.014, 0.014, 0.008]);
+  // waist
+  rotary('pinggang', [0, 1.165, -0.005], [0, 1, 0], 0.05, 0.04);
+  rotary('pinggang', [0, 1.085, 0], [1, 0, 0], 0.045, 0.075);
+  // legs
+  for (const s of ['L', 'R']) {
+    const sg = s === 'L' ? -1 : 1, hi = J['hi' + s], kn = J['kn' + s], an = J['an' + s], ft = J['ft' + s], ph = s === 'L' ? 0 : Math.PI;
+    rotary('pinggul', add(hi, [0, 0.05, 0]), [0, 1, 0], 0.038, 0.035);
+    rotary('pinggul', add(hi, [sg * 0.005, 0, 0]), [0, 0, 1], 0.036, 0.048);
+    linear('pinggul', add(hi, [sg * 0.01, -0.03, -0.035]), add(mix(hi, kn, 0.38), [0, 0, -0.035]), 0.018, ph + 0.6);
+    linear('lutut', add(mix(hi, kn, 0.36), [0, 0, 0.026]), add(kn, [0, 0.045, 0.026]), 0.023, ph);
+    pin('lutut', kn, [1, 0, 0], 0.022, 0.075);
+    box('lutut', 'lin', add(kn, [0, -0.01, 0.034]), [0.05, 0.05, 0.006]);
+    linear('pergkaki', add(mix(kn, an, 0.22), [0.017, 0, -0.03]), add(an, [0.017, 0.055, -0.03]), 0.013, ph + 1);
+    linear('pergkaki', add(mix(kn, an, 0.22), [-0.017, 0, -0.03]), add(an, [-0.017, 0.055, -0.03]), 0.013, ph + 2.2);
+    pin('pergkaki', an, [1, 0, 0], 0.016, 0.06);
+    const ftc = [an[0] + (ft[0] - an[0]) * .4, 0.045, an[2] + 0.02];
+    const ftd = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.009, 24), regMat('sen')); ftd.position.copy(V(ftc)); root.add(ftd); reg('telapak', ftd);
+    pin('telapak', [ft[0] + 0.005 * sg, 0.02, ft[2] + 0.085], [1, 0, 0], 0.008, 0.07);
+  }
+  // power + data harness
+  const paths = [];
+  for (const s of ['L', 'R']) {
+    const sg = s === 'L' ? -1 : 1;
+    paths.push([J.chest, [sg * 0.1, 1.53, 0], J['sh' + s], J['el' + s], J['wr' + s], J['ha' + s]]);
+    paths.push([J.chest, [sg * 0.02, 1.25, -0.04], J.waist, [sg * 0.05, 1.0, -0.02], J['hi' + s], J['kn' + s], J['an' + s], [J['ft' + s][0], 0.05, J['ft' + s][2]]]);
+  }
+  paths.push([J.chest, [0, 1.6, -0.02], J.neck, J.head]);
+  const dot = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 32; const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.beginPath(); x.arc(16, 16, 14, 0, TAU); x.fill(); return new THREE.CanvasTexture(cv); })();
+  const mk = (pts, kind) => {
+    const off = kind === 'data' ? [0.008, 0, -0.012] : [0, 0, 0];
+    const src = kind === 'data' ? [[0, 1.255, 0.02], ...pts.slice(1)] : pts;
+    const curve = new THREE.CatmullRomCurve3(src.map(p => V(add(p, off))));
+    const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(90));
+    const lm = kind === 'data' ? new THREE.LineDashedMaterial({ color: C.sig, dashSize: 0.012, gapSize: 0.009, transparent: true, opacity: .85 }) : new THREE.LineBasicMaterial({ color: C.pwr, transparent: true, opacity: .75 });
+    MATS.push({ m: lm, key: kind === 'data' ? 'sig' : 'pwr' });
+    const line = new THREE.Line(geo, lm); if (kind === 'data') line.computeLineDistances();
+    const n = kind === 'data' ? 7 : 6, arr = new Float32Array(n * 3);
+    const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+    const pm = new THREE.PointsMaterial({ color: kind === 'data' ? C.sig : C.pwr, size: kind === 'data' ? 4 : 6, sizeAttenuation: false, map: dot, transparent: true, alphaTest: .4, depthTest: false });
+    MATS.push({ m: pm, key: kind === 'data' ? 'sig' : 'pwr' });
+    const pts3 = new THREE.Points(pg, pm); pts3.renderOrder = 5;
+    root.add(line, pts3);
+    FLOWS.push({ curve, line, pts: pts3, arr, n, kind, off: Math.random() });
+  };
+  for (const p of paths) { mk(p, 'power'); mk(p, 'data'); }
+  // hit proxies + anchors
+  for (const p of PARTS) {
+    const h = new THREE.Mesh(new THREE.SphereGeometry(p.id === 'baterai' || p.id === 'komputer' ? 0.07 : 0.05, 10, 8), new THREE.MeshBasicMaterial({ visible: false }));
+    h.position.copy(V(p.anchor)); h.userData.part = p.id; root.add(h); HITS.push(h);
+    (PM[p.id] ??= { meshes: [] }).anchor = V(p.anchor).multiplyScalar(K);
+    for (const m of PM[p.id].meshes) { m.material = m.material.clone(); m.userData.baseEmissive = m.material.emissive.clone(); }
+  }
+}
+
+function applyTheme() {
+  readTokens();
+  if (!ready3D) return;
+  for (const { m, key } of MATS) m.color?.set(C[key]);
+  for (const id in PM) for (const m of PM[id].meshes) { const k = m.material.userData.key; if (k) m.material.color.set(C[k]); }
+  if (shellMats.xray) shellMats.xray.color.set(isDark() ? '#9aa6b5' : '#ffffff');
+}
+
+async function init3D() {
+  try {
+    THREE = await import('three');
+    ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+    ({ GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js'));
+    ({ RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js'));
+  } catch (e) { $('#loaderTxt').textContent = 'Pustaka 3D gagal dimuat. Panel lain tetap bisa dipakai.'; return; }
+  const stage = $('#stage');
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  stage.prepend(renderer.domElement);
+  scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8890a0, 0.7));
+  const dl = new THREE.DirectionalLight(0xffffff, 1.4); dl.position.set(1.5, 3, 2.5); scene.add(dl);
+  camera = new THREE.PerspectiveCamera(30, 1, 0.02, 50);
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 0.35; controls.maxDistance = 7;
+  controls.target.set(0, 0.88, 0); camera.position.set(0, 0.95, 3.6);
+  controls.addEventListener('start', () => { tween = null; });
+  root = new THREE.Group(); root.scale.setScalar(K); scene.add(root);
+  // floor shadow disc
+  const sc = document.createElement('canvas'); sc.width = sc.height = 128; const sx = sc.getContext('2d');
+  const gr = sx.createRadialGradient(64, 64, 4, 64, 64, 62); gr.addColorStop(0, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); sx.fillStyle = gr; sx.fillRect(0, 0, 128, 128);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false }));
+  floor.rotation.x = -Math.PI / 2; floor.position.set(0.04, 0.001, 0.04); scene.add(floor);
+  buildInternals();
+  ready3D = true;
+  resize3D(); setView(S.cam, false);
+  try {
+    const res = await fetch('tesla_bot_geo.txt'); if (!res.ok) throw new Error('geo ' + res.status);
+    $('#loaderBar').style.width = '45%';
+    const bin = Uint8Array.from(atob((await res.text()).trim()), ch => ch.charCodeAt(0));
+    $('#loaderBar').style.width = '70%';
+    const gltf = await new Promise((ok, no) => new GLTFLoader().parse(bin.buffer, './', ok, no));
+    gltf.scene.traverse(o => { if (o.isMesh) shellMesh = o; });
+    root.add(gltf.scene);
+    shellMats.solid = shellMesh.material;
+    shellMats.xray = new THREE.MeshStandardMaterial({ color: isDark() ? '#9aa6b5' : '#ffffff', map: shellMats.solid.map, transparent: true, opacity: .16, depthWrite: false, metalness: .1, roughness: .35, side: THREE.FrontSide });
+    shellMesh.renderOrder = 2;
+    setShell(S.shell);
+    $('#loader').hidden = true;
+  } catch (e) { $('#loaderTxt').textContent = 'Model cangkang gagal dimuat; komponen internal tetap tampil.'; }
+  stage.addEventListener('pointermove', onPointerMove);
+  stage.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+  stage.addEventListener('pointerup', onPointerUp);
+  stage.addEventListener('pointerleave', () => { S.hover = null; stage.classList.remove('pick'); });
+}
+
+function setShell(mode) {
+  S.shell = mode;
+  $$('#shells .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.shell === mode));
+  if (!shellMesh) return;
+  shellMesh.visible = mode !== 'off';
+  shellMesh.material = mode === 'solid' ? shellMats.solid : shellMats.xray;
+}
+
+/* camera */
+function viewOffsets() {
+  const st = $('#stage'), W = st.clientWidth, H = st.clientHeight;
+  if (!isDesk()) return { W, H, ox: 0, oy: -18, fw: W, fh: H - 40 };
+  const lw = $('.col-left').offsetWidth + 16, rw = $('.col-right').offsetWidth + 16;
+  const fb = $('.flowbar').offsetHeight + 12;
+  return { W, H, ox: (lw - rw) / 2, oy: (fb - 30) / 2 * -1, fw: W - lw - rw, fh: H - fb - 30 };
+}
+function resize3D() {
+  if (!ready3D) return;
+  const o = viewOffsets();
+  renderer.setSize(o.W, o.H, false);
+  camera.aspect = o.W / o.H;
+  camera.setViewOffset(o.W, o.H, -o.ox, -o.oy, o.W, o.H);
+  camera.updateProjectionMatrix();
+}
+function fitDist() {
+  const o = viewOffsets(), fov = camera.fov * Math.PI / 180, tv = Math.tan(fov / 2);
+  const dh = 0.99 / tv * Math.max(1, o.H / Math.max(o.fh, 200));
+  const dw = 0.62 / (tv * (o.W / o.H)) * Math.max(1, o.W / Math.max(o.fw, 200));
+  return Math.max(dh, dw) * 1.04;
+}
+function sph(t, az, el, r) {
+  const a = az * Math.PI / 180, e = el * Math.PI / 180;
+  return new THREE.Vector3(t.x + r * Math.sin(a) * Math.cos(e), t.y + r * Math.sin(e), t.z + r * Math.cos(a) * Math.cos(e));
+}
+const CAMS = { depan: [0, 4], tiga: [34, 10], samping: [90, 4], belakang: [180, 4] };
+function setView(name, anim = true) {
+  S.cam = name;
+  $$('#cams .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.cam === name));
+  if (!ready3D) return;
+  let t, pos;
+  if (name === 'fokus') {
+    const p = P[S.sel]; t = PM[p.id].anchor.clone();
+    pos = sph(t, p.view.az, p.view.el, p.view.r * 1.45 * (isDesk() ? 1 : 1.25));
+  } else { t = new THREE.Vector3(0.02, 0.87, 0.02); const [az, el] = CAMS[name]; pos = sph(t, az, el, fitDist()); }
+  if (!anim || REDUCED) { controls.target.copy(t); camera.position.copy(pos); controls.update(); tween = null; return; }
+  tween = { t0: performance.now(), d: 900, ft: controls.target.clone(), fp: camera.position.clone(), tt: t, tp: pos };
+}
+function stepTween(now) {
+  if (!tween) return;
+  const k = clamp((now - tween.t0) / tween.d, 0, 1), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  controls.target.lerpVectors(tween.ft, tween.tt, e);
+  // interpolate around target to avoid cutting through the body
+  const a = tween.fp.clone().sub(tween.ft), b = tween.tp.clone().sub(tween.tt);
+  const sa = new THREE.Spherical().setFromVector3(a), sb = new THREE.Spherical().setFromVector3(b);
+  let dth = sb.theta - sa.theta; if (dth > Math.PI) dth -= TAU; if (dth < -Math.PI) dth += TAU;
+  const s = new THREE.Spherical(lerp(sa.radius, sb.radius, e), lerp(sa.phi, sb.phi, e), sa.theta + dth * e);
+  camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(s));
+  if (k >= 1) tween = null;
+}
+
+/* picking */
+let downAt = null;
+const ray = () => new THREE.Raycaster();
+function pickAt(e) {
+  if (!ready3D) return null;
+  const r = renderer.domElement.getBoundingClientRect();
+  const m = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  const rc = ray(); rc.setFromCamera(m, camera);
+  const objs = [...HITS]; for (const id in PM) objs.push(...PM[id].meshes);
+  const hit = rc.intersectObjects(objs, false).find(h => h.object.userData.part);
+  return hit ? hit.object.userData.part : null;
+}
+function onPointerMove(e) {
+  if (e.buttons) return;
+  const id = pickAt(e); S.hover = id; $('#stage').classList.toggle('pick', !!id);
+}
+function onPointerUp(e) {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const id = pickAt(e); if (id) select(id, true);
+}
+
+/* labels */
+const tagEls = {};
+function buildTags() {
+  const box = $('#tags'); box.innerHTML = '';
+  for (const p of PARTS) {
+    const b = document.createElement('button'); b.className = 'tag'; b.innerHTML = `<span class="nl">${p.name}</span><span class="ns">${p.short || p.name}</span><small>${p.dof}</small>`;
+    b.addEventListener('click', () => select(p.id, true));
+    b.addEventListener('pointerenter', () => S.hover = p.id); b.addEventListener('pointerleave', () => S.hover = null);
+    box.appendChild(b); tagEls[p.id] = b;
+  }
+}
+function project(v) {
+  const o = viewOffsets(), q = v.clone().project(camera);
+  return { x: (q.x + 1) / 2 * o.W, y: (1 - q.y) / 2 * o.H, z: q.z };
+}
+function layoutTags() {
+  const svg = $('#leaders');
+  if (!ready3D || !S.ov.labels || S.tab !== 'anatomi') { svg.innerHTML = ''; for (const id in tagEls) tagEls[id].hidden = true; return; }
+  const o = viewOffsets(), desk = isDesk();
+  const lw = desk ? $('.col-left').offsetWidth + 24 : 8, rw = desk ? o.W - $('.col-right').offsetWidth - 24 : o.W - 8;
+  const c = project(new THREE.Vector3(0, 0.95, 0)), e = project(new THREE.Vector3(0.36 * K, 0.95, 0));
+  const half = Math.max(30, Math.abs(e.x - c.x));
+  const items = [];
+  for (const p of PARTS) {
+    const a = project(PM[p.id].anchor);
+    const vis = a.z < 1 && a.x > lw - 40 && a.x < rw + 40 && a.y > 20 && a.y < o.H - 20;
+    if (!vis) { tagEls[p.id].hidden = true; continue; }
+    const side = a.x < c.x ? 'L' : 'R';
+    items.push({ id: p.id, a, side, y: a.y });
+  }
+  const gap = desk ? 32 : 28;
+  for (const side of ['L', 'R']) {
+    const L = items.filter(i => i.side === side).sort((x, y) => x.y - y.y);
+    for (let i = 1; i < L.length; i++) if (L[i].y < L[i - 1].y + gap) L[i].y = L[i - 1].y + gap;
+    for (let i = L.length - 1; i >= 0; i--) { const lim = (i === L.length - 1 ? o.H - 26 : L[i + 1].y - gap); if (L[i].y > lim) L[i].y = lim; }
+  }
+  let html = '';
+  for (const it of items) {
+    const el = tagEls[it.id]; el.hidden = false;
+    const L = it.side === 'L', w = el.offsetWidth;
+    let x = L ? Math.max(lw, c.x - half - 34 - w) : Math.min(rw - w, c.x + half + 34);
+    if (!desk) x = L ? Math.max(6, Math.min(x, it.a.x - w - 24)) : Math.min(o.W - w - 6, Math.max(x, it.a.x + 24));
+    el.style.transform = `translate(${x.toFixed(1)}px,${(it.y - 9).toFixed(1)}px)`;
+    el.classList.toggle('r', L);
+    const sel = it.id === S.sel, hov = it.id === S.hover;
+    el.classList.toggle('sel', sel); el.classList.toggle('hov', hov && !sel);
+    const lx = L ? x + w + 4 : x - 4;
+    html += `<g class="${sel ? 'sel' : ''}"><polyline points="${it.a.x.toFixed(1)},${it.a.y.toFixed(1)} ${(lx + (L ? 10 : -10)).toFixed(1)},${it.y.toFixed(1)} ${lx.toFixed(1)},${it.y.toFixed(1)}"/><circle cx="${it.a.x.toFixed(1)}" cy="${it.a.y.toFixed(1)}" r="${sel ? 3.5 : 2.6}"/></g>`;
+  }
+  svg.innerHTML = html;
+}
+
+/* per-frame 3D animation */
+const tmpC = () => new THREE.Color();
+function anim3D(dt, now) {
+  if (!ready3D) return;
+  const A = ACT[S.act], t = S.t, mot = REDUCED ? 0 : 1;
+  for (const r of ROT) {
+    const ld = A.load[r.part] ?? .1;
+    r.spin.rotation.y += dt * mot * (0.4 + 14 * ld * Math.max(A.motion, .15)) * r.k;
+  }
+  for (const r of RODS) {
+    const ld = A.load[r.part] ?? .1, amp = .22 * Math.max(A.motion, .08) * (0.4 + ld);
+    const s = mot ? Math.sin(TAU * (S.act === 'jalan' ? S.phase : t * .25) + r.phase) : 0;
+    const ext = r.span * clamp(0.55 + amp * s, 0.15, 0.95);
+    const len = r.mL * .5 + ext;
+    r.rod.scale.y = len; r.rod.position.y = r.mL * .5 + len / 2; r.tip.position.y = r.mL + ext;
+  }
+  const pRate = S.P / 500;
+  for (const f of FLOWS) {
+    const show = f.kind === 'power' ? S.ov.power : S.ov.data;
+    f.line.visible = show; f.pts.visible = show && !REDUCED;
+    if (!show || REDUCED) continue;
+    const sp = f.kind === 'power' ? 0.06 + 0.22 * pRate : 0.5;
+    f.off = (f.off + dt * sp) % 1;
+    for (let i = 0; i < f.n; i++) { const u = (f.off + i / f.n) % 1, p = f.curve.getPointAt(u); f.arr[i * 3] = p.x; f.arr[i * 3 + 1] = p.y; f.arr[i * 3 + 2] = p.z; }
+    f.pts.geometry.attributes.position.needsUpdate = true;
+  }
+  const pulse = 0.55 + 0.3 * Math.sin(now / 260);
+  const hotC = new THREE.Color(C.hot), accC = new THREE.Color(C.accent);
+  for (const id in PM) {
+    const sel = id === S.sel, hi = sel || id === S.hover || S.chainHi.includes(id);
+    const ld = A.load[id] ?? 0;
+    const dimK = S.ov.isolate ? .12 : S.cam === 'fokus' ? .3 : 1;
+    const dim = dimK < 1 && !sel && !S.chainHi.includes(id);
+    for (const m of PM[id].meshes) {
+      const mt = m.material;
+      if (hi) { mt.emissive.copy(accC); mt.emissiveIntensity = sel ? pulse : .35; }
+      else if (ld > .2 && mt.userData.key !== 'metal') { mt.emissive.copy(hotC); mt.emissiveIntensity = (ld - .2) * .55; }
+      else { mt.emissive.copy(m.userData.baseEmissive); mt.emissiveIntensity = 1; }
+      const op = dim ? dimK : 1;
+      if (mt.opacity !== op) { mt.transparent = op < 1; mt.opacity = op; mt.depthWrite = op === 1; mt.needsUpdate = true; }
+    }
+  }
+}
+
+/* ================= 2D visualisations ================= */
+function fitCv(cv) {
+  const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  const w = Math.max(1, r.width), h = Math.max(1, r.height);
+  if (cv.width !== Math.round(w * d) || cv.height !== Math.round(h * d)) { cv.width = Math.round(w * d); cv.height = Math.round(h * d); }
+  const c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, w, h); return [c, w, h];
+}
+function txt(c, s, x, y, o = {}) {
+  c.font = `${o.w || 500} ${o.s || 10.5}px ${o.f || MONO}`; c.fillStyle = o.c || C['ink-2']; c.textAlign = o.a || 'left'; c.textBaseline = o.b || 'alphabetic'; c.fillText(s, x, y);
+}
+function arrow(c, x1, y1, x2, y2, col, lw = 1.5) {
+  c.strokeStyle = col; c.fillStyle = col; c.lineWidth = lw; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1); c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - 7 * Math.cos(a - .4), y2 - 7 * Math.sin(a - .4)); c.lineTo(x2 - 7 * Math.cos(a + .4), y2 - 7 * Math.sin(a + .4)); c.closePath(); c.fill();
+}
+function rrect(c, x, y, w, h, r = 3) { c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); }
+
+// strain wave gear. o: {T (Nm), rpm, N, eta, hold, big}
+function drawRotary(c, w, h, t, o) {
+  const Nf = 30, Nc = 32, rv = Nf / (Nc - Nf);
+  const R = Math.min(h * .44, w * (o.big ? .3 : .27)), cx = R + (o.big ? 24 : 10), cy = h / 2;
+  const phi = t * (o.spd ?? 1.6), out = -phi / rv;
+  // circular spline (fixed)
+  c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.fillStyle = rgba(C.ink, .09); c.fill(); c.strokeStyle = C['ink-3']; c.lineWidth = 1; c.stroke();
+  c.beginPath();
+  for (let i = 0; i <= Nc * 2; i++) { const a = i / (Nc * 2) * TAU, rr = R * (i % 2 ? .8 : .865); i ? c.lineTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)) : c.moveTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)); }
+  c.closePath(); c.fillStyle = C['panel-solid']; c.fill(); c.strokeStyle = C['ink-3']; c.stroke();
+  // flexspline
+  const rb = a => R * (.7 + .05 * Math.cos(2 * (a - phi)));
+  c.beginPath();
+  for (let i = 0; i <= Nf * 2; i++) { const a = out + i / (Nf * 2) * TAU, rr = rb(a) + (i % 2 ? R * .085 : 0); i ? c.lineTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)) : c.moveTo(cx + rr * Math.cos(a), cy + rr * Math.sin(a)); }
+  c.closePath(); c.fillStyle = rgba(C.rot, .28); c.fill(); c.strokeStyle = C.rot; c.lineWidth = 1.2; c.stroke();
+  // wave generator ellipse + balls
+  c.save(); c.translate(cx, cy); c.rotate(phi);
+  c.beginPath(); c.ellipse(0, 0, R * .69, R * .59, 0, 0, TAU); c.fillStyle = C['panel-solid']; c.fill(); c.strokeStyle = C['ink-2']; c.lineWidth = 1; c.stroke();
+  c.beginPath(); c.ellipse(0, 0, R * .61, R * .51, 0, 0, TAU); c.stroke();
+  for (let i = 0; i < 16; i++) { const a = i / 16 * TAU + t * .4; c.beginPath(); c.arc(R * .65 * Math.cos(a), R * .55 * Math.sin(a), R * .03, 0, TAU); c.fillStyle = C['ink-3']; c.fill(); }
+  c.beginPath(); c.arc(0, 0, R * .12, 0, TAU); c.fillStyle = C.ink; c.fill();
+  c.strokeStyle = C['panel-solid']; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 0); c.lineTo(R * .11, 0); c.stroke();
+  c.restore();
+  // output marker
+  const mx = cx + rb(out) * .93 * Math.cos(out), my = cy + rb(out) * .93 * Math.sin(out);
+  c.beginPath(); c.arc(mx, my, 4.5, 0, TAU); c.fillStyle = C.accent; c.fill();
+  // contact zones
+  for (const k of [0, Math.PI]) { const a = phi + k; c.beginPath(); c.arc(cx, cy, R * .835, a - .22, a + .22); c.strokeStyle = C.accent; c.lineWidth = 2.5; c.stroke(); }
+  // readouts
+  const x0 = cx + R + (o.big ? 34 : 18), compact = w - x0 < 230; let y = o.big ? 46 : 24;
+  const T = o.T ?? 1.2, rpm = o.rpm ?? 3000, N = o.N ?? 100, eta = o.eta ?? .75;
+  const lines = compact
+    ? [['Motor', [`${fmt(rpm)} rpm`, `${fmt(T, 2)} Nm`], C.ink], ['Rasio', [`${N} : 1`], C.rot], ['Output', [`${fmt(rpm / N, 1)} rpm`, `${fmt(T * N * eta)} Nm`], C.accent]]
+    : [['Motor', [`${fmt(rpm)} rpm · ${fmt(T, 2)} Nm`], C.ink], ['Rasio', [`${N} : 1  (Nf ÷ (Nc − Nf))`], C.rot], ['Output', [`${fmt(rpm / N, 1)} rpm · ${fmt(T * N * eta)} Nm`], C.accent]];
+  const vs = o.big && !compact ? 13 : 11, vl = vs + 3;
+  for (const [k, vals, col] of lines) {
+    txt(c, k.toUpperCase(), x0, y, { s: 9, f: BODY, w: 600, c: C['ink-3'] });
+    vals.forEach((v, i) => txt(c, v, x0, y + 13 + i * vl, { s: vs, c: col }));
+    y += 13 + vals.length * vl + (compact ? 6 : 12);
+  }
+  if (o.hold) { const heat = (T * N * eta / 180) ** 2; txt(c, compact ? `panas ∝ I²: ${fmt(heat * 100)} %` : `rugi panas ∝ I² · ${fmt(heat * 100)} % dari maks.`, x0, y + 2, { s: 10, c: C.hot }); }
+  else if (o.big && !compact) txt(c, 'Merah: dua zona gigi yang sedang bertaut', x0, y + 2, { s: 10, f: BODY, c: C['ink-3'] });
+}
+
+// planetary roller screw. o: {T, lead(mm), eta, rpm, big, dual}
+function drawLinear(c, w, h, t, o) {
+  if (o.dual) return drawLinear2(c, w, h, t);
+  const big = o.big, H = Math.min(h * (big ? .34 : .4), big ? 84 : 58), y = big ? h * .42 : h * .44;
+  const x0 = 12, mW = w * (big ? .38 : .42), travel = w * (big ? .28 : .3);
+  const ext = 0.5 + 0.45 * Math.sin(t * (o.spd ?? 1.1));
+  const rot = t * 9 * (o.rpm ?? 3000) / 3000;
+  // screw (behind)
+  const sx = x0 + mW * .12, sEnd = x0 + mW + travel * ext, sh = H * .24;
+  c.fillStyle = rgba(C.ink, .12); c.fillRect(sx, y - sh / 2, sEnd - sx, sh);
+  c.save(); c.beginPath(); c.rect(sx, y - sh / 2, sEnd - sx, sh); c.clip(); c.strokeStyle = C['ink-3']; c.lineWidth = 1;
+  for (let x = sx - 20 + ((ext * travel) % 6); x < sEnd + 10; x += 6) { c.beginPath(); c.moveTo(x, y + sh / 2); c.lineTo(x + 5, y - sh / 2); c.stroke(); }
+  c.restore();
+  // rod eye
+  c.beginPath(); c.arc(sEnd + sh * .6, y, sh * .75, 0, TAU); c.fillStyle = C['panel-solid']; c.fill(); c.strokeStyle = C.ink; c.lineWidth = 1.5; c.stroke();
+  // housing
+  rrect(c, x0, y - H / 2, mW, H, 4); c.fillStyle = rgba(C.ink, .07); c.fill(); c.strokeStyle = C['ink-3']; c.lineWidth = 1; c.stroke();
+  // stator coils
+  for (let i = 0; i < 8; i++) { const cx = x0 + mW * .1 + i * mW * .1; c.fillStyle = rgba(C.lin, .55); c.fillRect(cx, y - H / 2 + 3, mW * .07, H * .16); c.fillRect(cx, y + H / 2 - 3 - H * .16, mW * .07, H * .16); }
+  // rotating nut
+  const nx = x0 + mW * .14, nW = mW * .72, nH = H * .52;
+  rrect(c, nx, y - nH / 2, nW, nH, 2); c.fillStyle = rgba(C.lin, .18); c.fill(); c.strokeStyle = C.lin; c.stroke();
+  c.save(); c.beginPath(); c.rect(nx, y - nH / 2, nW, nH); c.clip(); c.strokeStyle = rgba(C.lin, .7);
+  for (let k = 0; k < 14; k++) { const yy = y - nH / 2 + ((k * nH / 7 + rot * 3) % (nH * 2)) - nH / 2; c.beginPath(); c.moveTo(nx, yy); c.lineTo(nx + nW, yy); c.stroke(); }
+  c.restore();
+  // rollers above/below screw
+  for (const sgn of [-1, 1]) for (let i = 0; i < 4; i++) {
+    const rx = nx + nW * (.15 + i * .23), ry = y + sgn * (sh / 2 + nH * .13);
+    c.beginPath(); c.arc(rx, ry, nH * .11, 0, TAU); c.fillStyle = C['panel-solid']; c.fill(); c.strokeStyle = C.ink; c.lineWidth = 1; c.stroke();
+    const a = rot * 2.2; c.beginPath(); c.moveTo(rx, ry); c.lineTo(rx + nH * .1 * Math.cos(a), ry + nH * .1 * Math.sin(a)); c.stroke();
+  }
+  // force arrow
+  const T = o.T ?? 1.5, L = o.lead ?? 2, eta = o.eta ?? .85, F = TAU * eta * T / (L / 1000);
+  const ax = sEnd + sh * 1.6; arrow(c, ax, y, ax + 18 + Math.min(40, F / 250), y, C.accent, 2);
+  // labels
+  txt(c, 'STATOR + MUR BERPUTAR', x0, y - H / 2 - 7, { s: 9, f: BODY, w: 600, c: C['ink-3'] });
+  txt(c, 'BATANG ULIR (TIDAK BERPUTAR, BERGESER)', x0 + mW * .1, y + H / 2 + 16, { s: 9, f: BODY, w: 600, c: C['ink-3'] });
+  const ty = big ? h - 46 : h - 24;
+  txt(c, `F = 2π · ${fmt(eta, 2)} · ${fmt(T, 2)} Nm ÷ ${fmt(L, 1)} mm = ${fmt(F)} N`, x0, ty, { s: big ? 12.5 : 11, c: C.ink });
+  txt(c, `≈ ${fmt(F / 9.81)} kgf · kecepatan ${fmt((o.rpm ?? 3000) / 60 * L)} mm/s`, x0, ty + (big ? 18 : 14), { s: big ? 11.5 : 10, c: C['ink-2'] });
+}
+function drawLinear2(c, w, h, t) {
+  const pd = Math.PI * (0.5 - 0.5 * Math.cos(t * .35));
+  const e1 = .5 + .38 * Math.sin(t * 1.4), e2 = .5 + .38 * Math.sin(t * 1.4 + pd);
+  const x0 = 12, mW = w * .34, trav = w * .2, ys = [h * .3, h * .62], H = Math.min(26, h * .16);
+  const ends = [];
+  [e1, e2].forEach((e, i) => {
+    const y = ys[i], sx = x0 + mW, ex = sx + trav * e;
+    c.fillStyle = rgba(C.ink, .14); c.fillRect(x0 + mW * .5, y - H * .16, ex - x0 - mW * .5, H * .32);
+    rrect(c, x0, y - H / 2, mW, H, 3); c.fillStyle = rgba(C.lin, .2); c.fill(); c.strokeStyle = C.lin; c.lineWidth = 1; c.stroke();
+    c.beginPath(); c.arc(ex, y, 4, 0, TAU); c.fillStyle = C.ink; c.fill(); ends.push([ex, y]);
+  });
+  // plate hinged at a pivot driven by both rods
+  const px = x0 + mW + trav * .5 + 34, py = (ys[0] + ys[1]) / 2;
+  const mean = (e1 + e2) / 2 - .5, diff = e1 - e2;
+  c.strokeStyle = C['ink-3']; c.setLineDash([3, 3]); c.lineWidth = 1;
+  for (const [ex, ey] of ends) { c.beginPath(); c.moveTo(ex, ey); c.lineTo(px - 8, py + (ey - py) * .5); c.stroke(); }
+  c.setLineDash([]);
+  c.save(); c.translate(px, py); c.rotate(diff * .9);
+  c.fillStyle = rgba(C.accent, .18); c.strokeStyle = C.accent; c.lineWidth = 1.5; rrect(c, -6, -(ys[1] - ys[0]) * .45, 12 + mean * 40, (ys[1] - ys[0]) * .9, 2); c.fill(); c.stroke();
+  c.restore();
+  c.beginPath(); c.arc(px, py, 3, 0, TAU); c.fillStyle = C.ink; c.fill();
+  const mode = pd < .6 ? 'Searah → menekuk (pitch)' : pd > 2.5 ? 'Berlawanan → miring (roll / yaw)' : 'Campuran pitch + roll';
+  txt(c, mode, x0, h - 12, { s: 11, c: C.ink });
+  txt(c, `Δ panjang ${fmt(diff * 100)} %`, w - 10, h - 12, { s: 10, a: 'right' });
+}
+
+// finger: worm gear + tendon + tactile stop. o: {T (mNm), N, big}
+function drawHand(c, w, h, t, o) {
+  const big = o.big, s = Math.min(1.3, h / (big ? 240 : 170));
+  const flexRaw = 0.5 - 0.5 * Math.cos(t * (o.spd ?? 1)), flex = Math.min(flexRaw, .82), touch = flexRaw > .8;
+  // worm + wheel
+  const wx = 16 * s + 6, wy = h * .74, wl = 70 * s, wr = 9 * s;
+  rrect(c, wx, wy - wr, wl, wr * 2, 4); c.fillStyle = rgba(C.fin, .2); c.fill(); c.strokeStyle = C.fin; c.lineWidth = 1; c.stroke();
+  c.save(); c.beginPath(); c.rect(wx, wy - wr, wl, wr * 2); c.clip(); c.strokeStyle = C.fin;
+  const wph = (touch ? .82 : flexRaw) * 60;
+  for (let x = wx - 10 + (wph % 7); x < wx + wl + 8; x += 7) { c.beginPath(); c.moveTo(x, wy + wr); c.lineTo(x + 6, wy - wr); c.stroke(); }
+  c.restore();
+  const gx = wx + wl * .5, gR = 26 * s, gy = wy - wr - gR + 3 * s;
+  c.beginPath();
+  for (let i = 0; i <= 48; i++) { const a = i / 48 * TAU + flex * 2.2, rr = gR * (i % 2 ? .9 : 1); i ? c.lineTo(gx + rr * Math.cos(a), gy + rr * Math.sin(a)) : c.moveTo(gx + rr * Math.cos(a), gy + rr * Math.sin(a)); }
+  c.closePath(); c.fillStyle = C['panel-solid']; c.fill(); c.strokeStyle = C['ink-2']; c.stroke();
+  c.beginPath(); c.arc(gx, gy, gR * .45, 0, TAU); c.strokeStyle = C.ink; c.stroke();
+  // finger chain
+  const bx = gx + gR + 40 * s, by = gy - 6 * s, segs = [46 * s, 34 * s, 24 * s], ks = [.9, 1.1, .8];
+  const pts = [[bx, by]]; let a = 0;
+  for (let i = 0; i < 3; i++) { a += flex * ks[i]; const [px, py] = pts[i]; pts.push([px + segs[i] * Math.cos(a), py + segs[i] * Math.sin(a)]); }
+  // palm
+  c.strokeStyle = rgba(C.ink, .25); c.lineWidth = 16 * s; c.lineCap = 'round'; c.beginPath(); c.moveTo(gx + gR * .3, by); c.lineTo(bx, by); c.stroke();
+  // egg target at full flex
+  const eggPos = (() => { let aa = 0, p = [bx, by]; for (let i = 0; i < 3; i++) { aa += .82 * ks[i]; p = [p[0] + segs[i] * Math.cos(aa), p[1] + segs[i] * Math.sin(aa)]; } return p; })();
+  c.beginPath(); c.ellipse(eggPos[0] + 4 * s, eggPos[1] + 22 * s, 15 * s, 20 * s, .3, 0, TAU); c.fillStyle = rgba(C.sen, .14); c.fill(); c.strokeStyle = rgba(C.sen, .7); c.lineWidth = 1; c.stroke();
+  // tendon
+  c.strokeStyle = C.fin; c.lineWidth = 1.4; c.lineCap = 'butt'; c.beginPath(); c.moveTo(gx + gR * .45, gy + gR * .1);
+  for (let i = 0; i < pts.length; i++) { const [px, py] = pts[i], aa = i ? Math.atan2(py - pts[i - 1][1], px - pts[i - 1][0]) : 0; c.lineTo(px - 6 * s * Math.sin(-aa), py + 6 * s * Math.cos(aa)); }
+  c.stroke();
+  // segments + joints
+  c.lineCap = 'round';
+  for (let i = 0; i < 3; i++) { c.strokeStyle = C.ink; c.lineWidth = 11 * s; c.beginPath(); c.moveTo(...pts[i]); c.lineTo(...pts[i + 1]); c.stroke(); }
+  for (let i = 0; i < 3; i++) { c.beginPath(); c.arc(pts[i][0], pts[i][1], 4 * s, 0, TAU); c.fillStyle = C['panel-solid']; c.fill(); }
+  const tip = pts[3]; c.beginPath(); c.arc(tip[0], tip[1], 6 * s, 0, TAU); c.fillStyle = touch ? C.sen : rgba(C.sen, .5); c.fill();
+  c.lineCap = 'butt';
+  const T = (o.T ?? 20) / 1000, N = o.N ?? 40, eta = .4, rp = .005, Ft = T * N * eta / rp;
+  const x0 = Math.min(w - 10, Math.max(bx + 90 * s, w * .62)), al = 'right';
+  txt(c, touch ? 'TAKTIL: TEKANAN TERDETEKSI · BERHENTI' : 'JARI MENEKUK', x0, 18, { s: 9, f: BODY, w: 600, c: touch ? C.accent : C['ink-3'], a: al });
+  txt(c, `tendon ≈ ${fmt(Ft)} N`, x0, 34, { s: big ? 12.5 : 11, c: C.ink, a: al });
+  txt(c, `ujung jari ≈ ${fmt(Ft * .16, 1)} N`, x0, 49, { s: big ? 12.5 : 11, c: C.ink, a: al });
+  txt(c, 'worm η ≈ 40 % → terkunci', x0, 64, { s: 10, c: C.fin, a: al });
+}
+
+// battery: 14 cells + runtime bars
+function drawBattery(c, w, h, t) {
+  const n = 14, x0 = 8, cw = (w - 16) / n, y0 = 18, ch = 30;
+  txt(c, `14 sel seri × ${fmt(S.V / 14, 2)} V = ${fmt(S.V, 1)} V`, x0, 11, { s: 10, c: C.ink });
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * cw + 1.5, ww = cw - 3;
+    rrect(c, x, y0, ww, ch, 2); c.strokeStyle = C['ink-3']; c.lineWidth = 1; c.stroke();
+    const f = clamp(S.soc + Math.sin(i * 7.1) * .012, 0, 1);
+    c.fillStyle = rgba(C.pwr, .75); c.fillRect(x + 1.5, y0 + 1.5 + (ch - 3) * (1 - f), ww - 3, (ch - 3) * f);
+  }
+  const rows = PBARS, by = y0 + ch + 18, rh = Math.min(20, (h - by - 4) / rows.length), maxH = 2300 * .9 / 100;
+  const actName = ACT[S.act].name;
+  rows.forEach(([nm, pw, cfk], i) => {
+    const y = by + i * rh, hrs = 2300 * .9 / pw, bw = (w - 150) * hrs / maxH, on = nm.toLowerCase().startsWith(actName.toLowerCase().slice(0, 5));
+    txt(c, `${nm} · ${pw} W`, x0, y + rh * .62, { s: 10, f: BODY, w: on ? 600 : 500, c: on ? C.accent : C['ink-2'] });
+    const bx = 108;
+    if (cfk === 'R') { c.fillStyle = on ? C.accent : C.pwr; c.fillRect(bx, y + 3, bw, rh - 7); }
+    else { c.save(); c.beginPath(); c.rect(bx, y + 3, bw, rh - 7); c.clip(); c.fillStyle = rgba(on ? C.accent : C.pwr, .35); c.fillRect(bx, y + 3, bw, rh - 7); c.strokeStyle = on ? C.accent : C.pwr; for (let k = -20; k < bw + 20; k += 6) { c.beginPath(); c.moveTo(bx + k, y + rh); c.lineTo(bx + k + 12, y); c.stroke(); } c.restore(); }
+    txt(c, `${fmt(hrs, 1)} j`, bx + bw + 5, y + rh * .62, { s: 10, c: C.ink });
+  });
+}
+
+// compute pipeline
+function drawCompute(c, w, h, t) {
+  const blocks = [['Kamera', C.sen], ['ISP', C['ink-3']], ['NPU ×2', C.accent], ['CPU', C.lin], ['Bus', C.sig]];
+  const n = blocks.length, gap = 10, bw = (w - 16 - gap * (n - 1)) / n, bh = 40, y = 26;
+  blocks.forEach(([nm, col], i) => {
+    const x = 8 + i * (bw + gap); rrect(c, x, y, bw, bh, 3); c.fillStyle = rgba(col, .14); c.fill(); c.strokeStyle = col; c.lineWidth = 1.2; c.stroke();
+    txt(c, nm, x + bw / 2, y + bh / 2 + 4, { s: 11, f: BODY, w: 600, c: C.ink, a: 'center' });
+    if (i < n - 1) { c.strokeStyle = C['ink-3']; c.lineWidth = 1; c.beginPath(); c.moveTo(x + bw, y + bh / 2); c.lineTo(x + bw + gap, y + bh / 2); c.stroke(); }
+  });
+  for (let k = 0; k < 6; k++) {
+    const u = ((t * .35 + k / 6) % 1), X = 8 + u * (w - 16), yy = y + bh / 2;
+    c.beginPath(); c.arc(X, yy + 26, 3, 0, TAU); c.fillStyle = C.accent; c.fill();
+  }
+  c.strokeStyle = rgba(C.accent, .3); c.beginPath(); c.moveTo(8, y + bh / 2 + 26); c.lineTo(w - 8, y + bh / 2 + 26); c.stroke();
+  txt(c, '1 NPU: 96 × 96 MAC × 2 operasi × 2 GHz', 8, y + bh + 54, { s: 10.5, c: C.ink });
+  txt(c, '= 36,9 TOPS · 2 NPU per chip = 73,7 TOPS', 8, y + bh + 70, { s: 10.5, c: C.accent });
+  txt(c, 'CPU 12 × Cortex-A72 · LPDDR4 68 GB/s · 14 nm', 8, y + bh + 86, { s: 10, c: C['ink-2'] });
+}
+
+// gait curves
+const gHip = p => 10 + 20 * Math.cos(TAU * p);
+const gKnee = p => 5 + 15 * Math.exp(-(((p - .15) / .07) ** 2)) + 55 * Math.exp(-(((p - .72) / .11) ** 2));
+const gAnk = p => -5 * Math.exp(-(((p - .07) / .04) ** 2)) + 10 * Math.exp(-(((p - .42) / .12) ** 2)) - 18 * Math.exp(-(((p - .62) / .06) ** 2));
+function drawGait(c, w, h, t) {
+  const L = 34, R = w - 8, T = 10, B = h - 22, y = v => B - (v + 20) / 85 * (B - T), x = p => L + p * (R - L);
+  c.strokeStyle = C.line; c.lineWidth = 1;
+  for (const v of [-20, 0, 20, 40, 60]) { c.beginPath(); c.moveTo(L, y(v)); c.lineTo(R, y(v)); c.stroke(); txt(c, `${v}°`, L - 5, y(v) + 3, { s: 9, a: 'right', c: C['ink-3'] }); }
+  for (const p of [0, .25, .5, .75, 1]) txt(c, `${p * 100}%`, x(p), h - 8, { s: 9, a: 'center', c: C['ink-3'] });
+  c.fillStyle = rgba(C.ink, .05); c.fillRect(x(0), T, x(.6) - x(0), B - T);
+  txt(c, 'TUMPU', x(.3), T + 11, { s: 8.5, f: BODY, w: 600, a: 'center', c: C['ink-3'] }); txt(c, 'AYUN', x(.8), T + 11, { s: 8.5, f: BODY, w: 600, a: 'center', c: C['ink-3'] });
+  const curves = [[gHip, C.rot, 'Pinggul'], [gKnee, C.lin, 'Lutut'], [gAnk, C.fin, 'Pergelangan kaki']];
+  curves.forEach(([f, col, nm], i) => {
+    c.strokeStyle = col; c.lineWidth = 2; c.beginPath();
+    for (let k = 0; k <= 100; k++) { const p = k / 100; k ? c.lineTo(x(p), y(f(p))) : c.moveTo(x(p), y(f(p))); } c.stroke();
+    txt(c, nm, R - 2, T + 24 + i * 12, { s: 9.5, f: BODY, w: 600, a: 'right', c: col });
+  });
+  const ph = S.act === 'jalan' ? S.phase % 1 : (t * .15) % 1;
+  c.strokeStyle = C.accent; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x(ph), T); c.lineTo(x(ph), B); c.stroke();
+  for (const [f] of curves) { c.beginPath(); c.arc(x(ph), y(f(ph)), 3.5, 0, TAU); c.fillStyle = C.accent; c.fill(); }
+}
+
+// knee torque vs flexion
+function drawKnee(c, w, h, t) {
+  const L = 38, R = w - 10, T = 12, B = h - 24, x = d => L + d / 120 * (R - L), y = v => B - v / 420 * (B - T);
+  c.strokeStyle = C.line; c.lineWidth = 1;
+  for (const v of [0, 100, 200, 300, 400]) { c.beginPath(); c.moveTo(L, y(v)); c.lineTo(R, y(v)); c.stroke(); txt(c, v, L - 5, y(v) + 3, { s: 9, a: 'right', c: C['ink-3'] }); }
+  for (const d of [0, 30, 60, 90, 120]) txt(c, `${d}°`, x(d), h - 8, { s: 9, a: 'center', c: C['ink-3'] });
+  txt(c, 'Nm', L - 5, T - 2, { s: 9, a: 'right', c: C['ink-3'] });
+  const fix = d => 8000 * .035 * Math.cos(d * Math.PI / 180 * .7), link = d => 8000 * (.025 + .022 * Math.sin(d * Math.PI / 180 * .9));
+  const need = d => (63 + 20) / 2 * 9.81 * .42 * Math.sin(d * Math.PI / 360) + 15;
+  const plot = (f, col, lw, dash) => { c.strokeStyle = col; c.lineWidth = lw; c.setLineDash(dash || []); c.beginPath(); for (let d = 0; d <= 120; d += 2) d ? c.lineTo(x(d), y(f(d))) : c.moveTo(x(d), y(f(d))); c.stroke(); c.setLineDash([]); };
+  plot(fix, C['ink-3'], 1.5); plot(need, C.ink, 1.2, [4, 3]); plot(link, C.accent, 2.2);
+  const d = 60 + 50 * Math.sin(t * .6);
+  c.beginPath(); c.arc(x(d), y(link(d)), 4, 0, TAU); c.fillStyle = C.accent; c.fill();
+  txt(c, `${fmt(d)}° → ${fmt(link(d))} Nm`, Math.min(x(d) + 8, R - 90), y(link(d)) - 8, { s: 10, c: C.accent });
+}
+
+// foot CoP
+function drawFoot(c, w, h, t) {
+  const cx = w / 2, cy = h / 2 + 4, fl = Math.min(h * .78, 130), fw = fl * .38, sep = fw * 1.25;
+  const walking = S.act === 'jalan', ph = walking ? S.phase % 1 : 0;
+  const feet = [{ x: cx - sep, dy: walking ? Math.sin(TAU * ph) * fl * .28 : 0, on: !walking || ph < .6 }, { x: cx + sep, dy: walking ? -Math.sin(TAU * ph) * fl * .28 : 0, on: !walking || ((ph + .5) % 1) < .6 }];
+  const hull = [];
+  feet.forEach((f, i) => {
+    const top = cy - fl / 2 + f.dy;
+    rrect(c, f.x - fw / 2, top, fw, fl, fw / 2); c.fillStyle = f.on ? rgba(C.ink, .1) : 'transparent'; c.fill(); c.strokeStyle = f.on ? C['ink-2'] : C['ink-3']; c.lineWidth = 1.2; c.setLineDash(f.on ? [] : [3, 3]); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = C['ink-3']; c.beginPath(); c.moveTo(f.x - fw / 2 + 2, top + fl * .22); c.lineTo(f.x + fw / 2 - 2, top + fl * .22); c.stroke();
+    txt(c, i ? 'KANAN' : 'KIRI', f.x, top + fl + 13, { s: 8.5, f: BODY, w: 600, a: 'center', c: C['ink-3'] });
+    if (f.on) hull.push([f.x - fw / 2, top + 4], [f.x + fw / 2, top + 4], [f.x + fw / 2, top + fl - 4], [f.x - fw / 2, top + fl - 4]);
+  });
+  if (hull.length) {
+    const xs = hull.map(p => p[0]), ys = hull.map(p => p[1]);
+    c.strokeStyle = C.accent; c.setLineDash([4, 3]); c.lineWidth = 1; c.strokeRect(Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)); c.setLineDash([]);
+  }
+  let cop, com;
+  if (walking) {
+    const st = ph < .5 ? feet[0] : feet[1], q = (ph % .5) / .5, top = cy - fl / 2 + st.dy;
+    cop = [st.x + (ph < .5 ? 3 : -3), top + fl * (.88 - .72 * q)];
+    com = [cx + (ph < .5 ? -1 : 1) * sep * .45 * Math.sin(Math.PI * q), cy];
+  } else { cop = [cx + Math.sin(t * .9) * sep * .35, cy + Math.sin(t * .6) * fl * .12]; com = [cx + Math.sin(t * .9 - .5) * sep * .3, cy + Math.sin(t * .6 - .4) * fl * .1]; }
+  c.beginPath(); c.arc(com[0], com[1], 5, 0, TAU); c.fillStyle = C.ink; c.fill();
+  c.beginPath(); c.arc(cop[0], cop[1], 5, 0, TAU); c.fillStyle = C.accent; c.fill();
+  txt(c, 'CoP', cop[0] + 8, cop[1] + 3, { s: 10, c: C.accent });
+  txt(c, 'CoM', com[0] + 8, com[1] - 6, { s: 10, c: C.ink });
+}
+
+// camera parallax
+function drawCamera(c, w, h, t) {
+  const hx = w * .16, hy = h * .5, B = Math.min(h * .32, 46);
+  const cams = [[hx + 18, hy - B / 2], [hx + 18, hy + B / 2]];
+  c.beginPath(); c.ellipse(hx, hy, 22, B * .9, 0, 0, TAU); c.fillStyle = rgba(C.ink, .85); c.fill();
+  const ox = w * (.55 + .3 * (0.5 + 0.5 * Math.sin(t * .5))), oy = hy + Math.sin(t * .8) * h * .18;
+  for (const [x, y] of cams) {
+    c.fillStyle = rgba(C.sen, .1); c.beginPath(); c.moveTo(x, y); c.lineTo(w, y - (w - x) * .45); c.lineTo(w, y + (w - x) * .45); c.closePath(); c.fill();
+    c.strokeStyle = C.sen; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y); c.lineTo(ox, oy); c.stroke();
+    c.beginPath(); c.arc(x, y, 4, 0, TAU); c.fillStyle = C.sen; c.fill();
+  }
+  c.beginPath(); c.arc(ox, oy, 7, 0, TAU); c.fillStyle = C.accent; c.fill();
+  const Z = ((ox - hx) / (w * .85)) * 3 + .3, d = 1000 * .08 / Z;
+  txt(c, `jarak ${fmt(Z, 2)} m → disparitas ${fmt(d)} px`, 8, h - 22, { s: 10.5, c: C.ink });
+  txt(c, 'Z = f · B ÷ d   (f = 1.000 px, B = 8 cm, ilustratif)', 8, h - 8, { s: 9.5, c: C['ink-2'] });
+}
+
+const VIZ = {
+  rotary: (c, w, h, t, p) => drawRotary(c, w, h, t, p.id === 'leher' ? { T: .3, N: 50, rpm: 2000 } : p.id === 'pinggang' ? { T: 1.8, N: 100, rpm: 1500, hold: true, spd: .7 } : { T: 1.2, N: 100, rpm: 3000 }),
+  linear: (c, w, h, t, p) => drawLinear(c, w, h, t, p.id === 'lutut' ? { T: 2.6, lead: 2 } : { T: 1.5, lead: 2 }),
+  linear2: (c, w, h, t) => drawLinear2(c, w, h, t),
+  hand: (c, w, h, t) => drawHand(c, w, h, t, {}),
+  battery: drawBattery, compute: drawCompute, gait: drawGait, knee: drawKnee, foot: drawFoot, camera: drawCamera,
+};
+
+// FOC canvas: rotating field + 3-phase currents
+function drawFOC(c, w, h, t) {
+  const R = Math.min(h * .36, w * .17), cx = R + 24, cy = h / 2, th = t * 1.4;
+  c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.strokeStyle = C['ink-3']; c.lineWidth = 1; c.stroke();
+  const ph = [0, TAU / 3, 2 * TAU / 3], cols = [C.pwr, C.lin, C.fin];
+  ph.forEach((p, i) => {
+    const a = p - Math.PI / 2, I = Math.cos(th + Math.PI / 2 - p);
+    const x = cx + R * 1.12 * Math.cos(a), y = cy + R * 1.12 * Math.sin(a);
+    c.beginPath(); c.arc(x, y, 8, 0, TAU); c.fillStyle = rgba(cols[i], .2 + .6 * Math.abs(I)); c.fill(); c.strokeStyle = cols[i]; c.stroke();
+    txt(c, 'UVW'[i], x, y + 3.5, { s: 10, a: 'center', c: C.ink, w: 600 });
+  });
+  // rotor magnet
+  c.save(); c.translate(cx, cy); c.rotate(th);
+  c.fillStyle = rgba(C.hot, .8); c.fillRect(0, -R * .22, R * .7, R * .44); c.fillStyle = rgba(C.lin, .8); c.fillRect(-R * .7, -R * .22, R * .7, R * .44);
+  txt(c, 'N', R * .45, 4, { s: 11, a: 'center', c: '#fff', w: 600 }); txt(c, 'S', -R * .45, 4, { s: 11, a: 'center', c: '#fff', w: 600 });
+  c.restore();
+  // stator field vector, 90° ahead (pure Iq)
+  arrow(c, cx, cy, cx + R * .85 * Math.cos(th + Math.PI / 2), cy + R * .85 * Math.sin(th + Math.PI / 2), C.accent, 2.5);
+  txt(c, 'medan stator 90° di depan magnet = torsi maksimum', 8, h - 8, { s: 9.5, c: C['ink-2'] });
+  // waves
+  const L = cx + R + 40, Rr = w - 10, T = 20, B = h - 30, mid = (T + B) / 2, amp = (B - T) / 2 * .85;
+  c.strokeStyle = C.line; c.beginPath(); c.moveTo(L, mid); c.lineTo(Rr, mid); c.stroke();
+  ph.forEach((p, i) => {
+    c.strokeStyle = cols[i]; c.lineWidth = 1.8; c.beginPath();
+    for (let k = 0; k <= 120; k++) { const u = k / 120, a = th - (1 - u) * TAU * 1.5; const v = Math.cos(a + Math.PI / 2 - p); const X = L + u * (Rr - L), Y = mid - v * amp; k ? c.lineTo(X, Y) : c.moveTo(X, Y); }
+    c.stroke();
+  });
+  c.strokeStyle = C.accent; c.lineWidth = 1; c.beginPath(); c.moveTo(Rr, T); c.lineTo(Rr, B); c.stroke();
+  txt(c, 'arus fasa U · V · W', L, 12, { s: 9.5, c: C['ink-2'] });
+  txt(c, 'sekarang', Rr, B + 14, { s: 9, a: 'right', c: C.accent });
+}
+
+/* ================= UI ================= */
+function buildParts() {
+  const nav = $('#parts'); let html = '';
+  for (const g of GROUPS) {
+    html += `<h3 class="eyebrow">${g}</h3>`;
+    for (const p of PARTS.filter(q => q.grp === g)) html += `<button class="part" data-id="${p.id}" style="--c:var(--${TYPE[p.type][0]})"><span class="dot"></span><span class="nm">${p.name}</span><span class="lv">${p.dof}</span></button>`;
+  }
+  nav.innerHTML = html;
+  $$('.part', nav).forEach(b => {
+    b.addEventListener('click', () => select(b.dataset.id, true));
+    b.addEventListener('pointerenter', () => S.hover = b.dataset.id); b.addEventListener('pointerleave', () => S.hover = null);
+  });
+}
+function renderDetail() {
+  const p = P[S.sel], ty = TYPE[p.type];
+  $('#dGrp').textContent = p.grp;
+  $('#dDom').innerHTML = `<i style="--c:var(--${ty[0]})"></i>${ty[1]}`;
+  $('#dName').textContent = p.name; $('#dEn').textContent = p.en; $('#dRole').textContent = p.role;
+  $('#cTitle').textContent = p.chart[1]; $('#cCap').textContent = p.chart[2];
+  $('#cMeta').textContent = p.chart[0] === 'battery' ? 'simulasi' : p.chart[0] === 'gait' || p.chart[0] === 'knee' ? 'ilustratif' : 'animasi';
+  $('#dSteps').innerHTML = p.steps.map(s => `<li><span>${s}</span></li>`).join('');
+  $('#dSpecs').innerHTML = p.specs.map(([k, v, c]) => `<dt>${k}</dt><dd>${v}</dd><span class="c">${c ? cf(c) : '<span class="cf cf-I" style="font-style:normal">—</span>'}</span>`).join('');
+  $('#dInd').innerHTML = `<div><b>Masalah</b>${p.ind[0]}</div><div class="dev"><b>Sedang dikembangkan</b>${p.ind[1]}</div>`;
+  $('#dLinks').innerHTML = p.links.map(id => `<button class="chip" data-go="${id}">${P[id].name}</button>`).join('');
+  $$('#dLinks .chip').forEach(b => b.addEventListener('click', () => select(b.dataset.go, true)));
+  $$('#parts .part').forEach(b => b.setAttribute('aria-current', b.dataset.id === S.sel));
+}
+function select(id, fromUser) {
+  if (!P[id]) return;
+  S.sel = id; renderDetail();
+  if (fromUser) {
+    $('#detail').scrollTop = 0;
+    if (S.cam === 'fokus' || isDesk()) setView('fokus');
+    setHash(id);
+  }
+}
+function setHash(h) { try { history.replaceState(null, '', '#' + h); } catch (e) { location.hash = h; } }
+
+function buildChain() {
+  const el = $('#chain'); let html = '';
+  CHAIN.forEach(([id, t, v], i) => {
+    if (i) html += '<span class="arr" aria-hidden="true">›</span>';
+    html += `<button class="node" data-n="${id}"><span class="n">${i + 1}</span><span class="t">${t}</span><span class="v">${v}</span></button>`;
+  });
+  el.innerHTML = html;
+  $$('.node', el).forEach(b => b.addEventListener('click', () => setChain(S.chainSel === b.dataset.n ? null : b.dataset.n)));
+  setChain(null);
+}
+function setChain(id) {
+  S.chainSel = id; const it = CHAIN.find(c => c[0] === id);
+  S.chainHi = it ? it[3] : [];
+  $$('#chain .node').forEach(b => b.classList.toggle('sel', b.dataset.n === id));
+  $('#chainCap').textContent = it ? it[4] : 'Satu siklus: kamera melihat, AI memutuskan, motor bergerak, sensor melapor balik. Makin ke kanan, makin cepat detaknya.';
+}
+
+function setAct(a) {
+  S.act = a;
+  $$('#acts .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.act === a));
+  const A = ACT[a];
+  $('#pLabel').textContent = `Daya total · ${A.name}`;
+  $('#pConf').innerHTML = A.conf === 'R' ? 'angka Tesla' : 'estimasi';
+}
+
+/* ================= simulation ================= */
+function simStep(dt) {
+  const A = ACT[S.act];
+  S.t += dt;
+  S.phase = (S.phase + dt * 0.9) % 1;
+  let Pt = A.P;
+  if (S.act === 'jalan') Pt = A.P + 110 * Math.sin(TAU * 2 * S.phase - 1);
+  if (S.act === 'angkat') Pt = A.P + 160 * Math.sin(S.t * 1.1 - Math.PI / 2);
+  S.Pn = Pt; S.P = lerp(S.P || Pt, Pt, clamp(dt * 6, 0, 1));
+  const ocv = 14 * (3.3 + 0.9 * S.soc), Rp = 0.06;
+  S.I = S.P / ocv; S.V = ocv - S.I * Rp;
+  S.soc = Math.max(0.02, S.soc - S.P * dt * WARP / 3600 / 2300);
+  if (S.soc <= 0.021) S.soc = 0.82;
+  S.tk = A.knee(S.phase, S.t);
+  const Tss = 30 + 0.0018 * S.tk * S.tk;
+  S.temp += (Tss - S.temp) * clamp(dt / 18, 0, 1);
+  S.hist.push(S.P); if (S.hist.length > 300) S.hist.shift();
+}
+let lastRO = 0;
+function renderReadout(now) {
+  if (now - lastRO < 90) return; lastRO = now;
+  $('#bigP').innerHTML = `${fmt(S.P)}<small>W</small>`;
+  $('#sSoc').textContent = fmt(S.soc * 100);
+  $('#sRem').textContent = fmt(S.soc * 2300 * .9 / Math.max(ACT[S.act].P, 1), 1);
+  $('#sI').textContent = fmt(S.I, 1); $('#sV').textContent = fmt(S.V, 1);
+  $('#sTk').textContent = fmt(S.tk); $('#sTt').textContent = fmt(S.temp);
+  const [c, w, h] = fitCv($('#spark'));
+  const H = S.hist; if (H.length < 2) return;
+  const y = v => h - 3 - v / 900 * (h - 6);
+  c.strokeStyle = C.line; c.beginPath(); c.moveTo(0, y(500)); c.lineTo(w, y(500)); c.stroke();
+  c.beginPath(); H.forEach((v, i) => { const x = i / 299 * w; i ? c.lineTo(x, y(v)) : c.moveTo(x, y(v)); });
+  c.strokeStyle = C.accent; c.lineWidth = 1.5; c.stroke();
+  c.lineTo((H.length - 1) / 299 * w, h); c.lineTo(0, h); c.closePath(); c.fillStyle = rgba(C.accent, .1); c.fill();
+  const lx = (H.length - 1) / 299 * w; c.beginPath(); c.arc(lx, y(H[H.length - 1]), 2.5, 0, TAU); c.fillStyle = C.accent; c.fill();
+  txt(c, '500 W', w, y(500) - 3, { s: 8.5, a: 'right', c: C['ink-3'] });
+}
+
+/* ================= tabs + routing ================= */
+const TABS = ['anatomi', 'aktuator', 'elektronik', 'chip', 'os', 'industri'];
+function showTab(tab) {
+  S.tab = tab;
+  for (const t of TABS) $('#v-' + t).hidden = t !== tab;
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
+  if (tab === 'anatomi') requestAnimationFrame(() => { resize3D(); });
+  else { $('#v-' + tab).scrollTop = 0; if (!isDesk()) scrollTo(0, 0); }
+}
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (TABS.includes(h)) showTab(h);
+  else if (P[h]) { showTab('anatomi'); select(h, false); if (ready3D) setView('fokus', false); else S.cam = 'fokus'; }
+  else showTab('anatomi');
+}
+
+/* ================= actuator lab ================= */
+const LAB = {
+  rotary: { T: ['Torsi motor', .2, 2.5, .05, 1.2, v => `${fmt(v, 2)} Nm`], R: ['Rasio gigi', 30, 160, 10, 100, v => `${v} : 1`], eta: .75,
+    steps: ['Motor PMSM frameless memutar wave generator, sebuah cam elips dengan bantalan tipis.', 'Flexspline (cangkir baja tipis bergigi luar) ikut melendut menjadi elips, sehingga giginya hanya bertaut dengan circular spline di dua titik.', 'Circular spline punya 2 gigi lebih banyak. Tiap satu putaran wave generator, flexspline tertinggal 2 gigi: rasio = gigi flexspline ÷ 2, misalnya 200 ÷ 2 = 100.', 'Hampir tanpa celah antar-gigi (backlash), ringkas, cocok untuk sendi yang butuh presisi. Kelemahannya: flexspline lelah logam dan peka benturan.'] },
+  linear: { T: ['Torsi motor', .2, 3, .05, 1.5, v => `${fmt(v, 2)} Nm`], R: ['Lead ulir', 1, 6, .5, 2, v => `${fmt(v, 1)} mm/putaran`], eta: .85,
+    steps: ['Stator membuat medan putar; rotor berlubang di dalamnya adalah mur roller screw.', 'Di dalam mur ada 7–10 rol berulir yang menggelinding di antara mur dan batang ulir, seperti planet di gigi planetary.', 'Kontak garis antar-ulir yang banyak membuat roller screw menahan gaya jauh lebih besar dari ball screw berukuran sama.', 'Satu putaran mur menggeser batang sejauh lead. Lead kecil = gaya besar tapi lambat; lead besar = cepat dan lebih mudah diputar balik.'] },
+  finger: { T: ['Torsi motor', 5, 40, 1, 20, v => `${fmt(v)} mNm`], R: ['Rasio worm', 15, 80, 5, 40, v => `${v} : 1`], eta: .4,
+    steps: ['Motor kecil (coreless atau brushless mini) memutar ulir cacing (worm).', 'Worm memutar roda gigi; rasio = jumlah gigi roda ÷ jumlah ulir worm, biasanya 20–80 dalam satu tahap.', 'Karena sudut ulir kecil, gesekan lebih besar dari gaya balik: jari tidak bisa memutar motor (self-locking). Genggaman tertahan tanpa arus listrik.', 'Harga yang dibayar: efisiensi hanya ± 40 %, dan jari tidak bisa “mengalah” saat terbentur, jadi sensor taktil dan kontrol gaya wajib.'] },
+};
+let labFam = 'rotary';
+function setLab(f) {
+  labFam = f; const L = LAB[f];
+  $$('#labFam .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.fam === f));
+  const t = $('#lT'), r = $('#lR');
+  [t.min, t.max, t.step, t.value] = [L.T[1], L.T[2], L.T[3], L.T[4]]; $('#lTl').textContent = L.T[0];
+  [r.min, r.max, r.step, r.value] = [L.R[1], L.R[2], L.R[3], L.R[4]]; $('#lRl').textContent = L.R[0];
+  $('#labSteps').innerHTML = L.steps.map(s => `<li><span>${s}</span></li>`).join('');
+  updLab();
+}
+function labVals() { return { T: +$('#lT').value, rpm: +$('#lS').value, R: +$('#lR').value }; }
+function updLab() {
+  const L = LAB[labFam], v = labVals();
+  $('#lTo').textContent = L.T[5](v.T); $('#lRo').textContent = L.R[5](v.R); $('#lSo').textContent = `${fmt(v.rpm)} rpm`;
+  let A, B, Pw, F;
+  if (labFam === 'rotary') { A = v.T * v.R * L.eta; B = v.rpm / v.R; Pw = A * B * TAU / 60; $('#oAl').textContent = 'Torsi output'; $('#oA').innerHTML = `${fmt(A)}<small>Nm</small>`; $('#oBl').textContent = 'Kecepatan output'; $('#oB').innerHTML = `${fmt(B, 1)}<small>rpm</small>`; F = `τ_out = τ_motor × N × η = ${fmt(v.T, 2)} × ${v.R} × ${fmt(L.eta, 2)} = ${fmt(A)} Nm`; }
+  else if (labFam === 'linear') { A = TAU * L.eta * v.T / (v.R / 1000); B = v.rpm / 60 * v.R; Pw = A * B / 1000; $('#oAl').textContent = 'Gaya output'; $('#oA').innerHTML = `${fmt(A)}<small>N</small>`; $('#oBl').textContent = 'Kecepatan batang'; $('#oB').innerHTML = `${fmt(B)}<small>mm/s</small>`; F = `F = 2π × η × τ ÷ lead = 2π × ${fmt(L.eta, 2)} × ${fmt(v.T, 2)} ÷ ${fmt(v.R / 1000, 4)} m = ${fmt(A)} N`; }
+  else { const T = v.T / 1000; A = T * v.R * L.eta / .005; B = v.rpm / v.R; Pw = T * v.R * L.eta * B * TAU / 60; $('#oAl').textContent = 'Tarikan tendon'; $('#oA').innerHTML = `${fmt(A)}<small>N</small>`; $('#oBl').textContent = 'Putaran roda'; $('#oB').innerHTML = `${fmt(B, 1)}<small>rpm</small>`; F = `F_tendon = τ × N × η ÷ r_puli = ${fmt(T, 3)} × ${v.R} × ${fmt(L.eta, 2)} ÷ 0,005 m = ${fmt(A)} N`; }
+  $('#oC').innerHTML = `${fmt(Pw)}<small>W</small>`; $('#oD').innerHTML = `${fmt(L.eta * 100)}<small>%</small>`;
+  $('#lF').textContent = F;
+}
+function drawLab(t) {
+  const [c, w, h] = fitCv($('#labCv')), v = labVals();
+  if (labFam === 'rotary') drawRotary(c, w, h, t, { T: v.T, rpm: v.rpm, N: v.R, eta: .75, big: true, spd: v.rpm / 1800 });
+  else if (labFam === 'linear') drawLinear(c, w, h, t, { T: v.T, lead: v.R, rpm: v.rpm, eta: .85, big: true, spd: .6 + v.rpm / 6000 });
+  else drawHand(c, w, h, t, { T: v.T, N: v.R, big: true, spd: .5 + v.rpm / 4000 });
+}
+
+/* ================= static doc widgets ================= */
+function buildDocs() {
+  // power bars
+  const maxP = 700;
+  $('#pbars').innerHTML = PBARS.map(([nm, pw, k]) => `<div class="pbar"><span>${nm} ${cf(k)}</span><span class="bar"><i class="${k === 'R' ? '' : 'est'}" style="width:${pw / maxP * 100}%"></i></span><span class="v">${pw} W · ${fmt(2300 * .9 / pw, 1)} jam</span></div>`).join('');
+  // loop rates (log 1 Hz .. 100 kHz)
+  const lx = f => Math.log10(f) / 5 * 100;
+  let rh = `<div class="rate axis"><span></span><span class="ticks"><span>1 Hz</span><span>10</span><span>100</span><span>1 k</span><span>10 k</span><span>100 k</span></span><span></span></div>`;
+  for (const [nm, lo, hi, k, lab, col] of RATES) {
+    const a = lx(lo), b = Math.max(lx(hi), a + 1.2);
+    rh += `<div class="rate"><span>${nm} ${cf(k)}</span><span class="bar"><i style="left:${a}%;width:${b - a}%;--c:${col}"></i></span><span class="v">${lab}</span></div>`;
+  }
+  $('#rates').innerHTML = rh;
+  // constraint cards
+  $('#cards').innerHTML = CARDS.map(([t, k, key, prob, dev]) => `<article class="ccard"><header><h4>${t}</h4>${cf(k)}</header><div class="key">${key}</div><p><b>Masalah</b>${prob}</p><p class="dev"><b>Sedang dikembangkan</b>${dev}</p></article>`).join('');
+  // TOPS calculator
+  const upd = () => {
+    const N = +$('#tN').value, f = +$('#tF').value, n = +$('#tC').value, per = N * N * 2 * f / 1000;
+    $('#tNo').textContent = `${N} × ${N}`; $('#tFo').textContent = `${fmt(f, 1)} GHz`; $('#tCo').textContent = n;
+    $('#tA').innerHTML = `${fmt(per, 1)}<small>TOPS</small>`; $('#tB').innerHTML = `${fmt(per * n, 1)}<small>TOPS</small>`;
+    $('#tFm').textContent = `${N} × ${N} MAC × 2 op × ${fmt(f, 1)} × 10⁹ Hz = ${fmt(per, 1)} × 10¹² op/s per NPU`;
+  };
+  ['#tN', '#tF', '#tC'].forEach(s => $(s).addEventListener('input', upd)); upd();
+}
+
+/* ================= main loop ================= */
+let lastT = performance.now(), vizT = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  simStep(dt);
+  if (!REDUCED) vizT += dt;
+  if (S.tab === 'anatomi') {
+    if (ready3D) {
+      stepTween(now); controls.update(); anim3D(dt, now);
+      renderer.render(scene, camera);
+    }
+    layoutTags();
+    renderReadout(now);
+    const cv = $('#chart'); if (cv.offsetParent) { const [c, w, h] = fitCv(cv); const p = P[S.sel]; VIZ[p.chart[0]](c, w, h, vizT, p); }
+    // chain pulse
+    const k = Math.floor(now / 380) % CHAIN.length;
+    $$('#chain .node').forEach((b, i) => b.classList.toggle('pulse', !REDUCED && i === k));
+  } else if (S.tab === 'aktuator') {
+    drawLab(vizT);
+    const [c, w, h] = fitCv($('#focCv')); drawFOC(c, w, h, vizT);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ================= boot ================= */
+function boot() {
+  buildParts(); buildTags(); buildChain(); buildDocs();
+  setAct(S.act); setShell(S.shell);
+  $$('#ovl .chip').forEach(b => b.setAttribute('aria-pressed', !!S.ov[b.dataset.ov]));
+  $$('#cams .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.cam === S.cam));
+  $$('#acts .chip').forEach(b => b.addEventListener('click', () => setAct(b.dataset.act)));
+  $$('#cams .chip').forEach(b => b.addEventListener('click', () => setView(b.dataset.cam)));
+  $$('#shells .chip').forEach(b => b.addEventListener('click', () => setShell(b.dataset.shell)));
+  $$('#ovl .chip').forEach(b => b.addEventListener('click', () => { const k = b.dataset.ov; S.ov[k] = !S.ov[k]; b.setAttribute('aria-pressed', S.ov[k]); }));
+  $$('.tab').forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); setHash(b.dataset.tab); }));
+  $$('#labFam .chip').forEach(b => b.addEventListener('click', () => setLab(b.dataset.fam)));
+  ['#lT', '#lS', '#lR'].forEach(s => $(s).addEventListener('input', updLab));
+  setLab('rotary');
+  select(S.sel, false);
+  addEventListener('hashchange', route);
+  addEventListener('resize', () => { resize3D(); });
+  addEventListener('keydown', e => {
+    if (e.target.closest('input,textarea') || S.tab !== 'anatomi') return;
+    if (e.key === 'h' || e.key === 'H') { S.ui = !S.ui; $('#v-anatomi').classList.toggle('ui-off', !S.ui); }
+  });
+  const mq = matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener?.('change', applyTheme);
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
+  route();
+  requestAnimationFrame(frame);
+  init3D().then(() => { if (S.cam === 'fokus') setView('fokus', false); });
+}
+boot();
+</script>
+</body>
+</html>

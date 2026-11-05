@@ -1,0 +1,208 @@
+
+  <section class="doc" id="v-chip" hidden aria-label="Chip">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Detail chip</p>
+        <h2>Otak yang sama dengan mobil: <span>Tesla SoC</span></h2>
+        <p class="lede">Prototipe Gen 1 (2022) memakai satu Tesla SoC, chip yang sama dengan komputer Full Self-Driving di mobil. Chip generasi berikutnya belum dirilis spesifikasinya untuk Optimus, jadi rincian di bawah memakai chip FSD generasi pertama (HW3) yang datanya dipublikasikan di Hot Chips 2019.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Denah blok chip FSD (HW3)</h3>
+        <div class="svgwrap">
+          <svg viewBox="0 0 760 360" role="img" aria-label="Diagram blok chip FSD">
+            <rect class="die" x="10" y="10" width="740" height="340" rx="4"/>
+            <rect class="npu" x="30" y="30" width="220" height="140" rx="3"/>
+            <text x="44" y="56" font-weight="600" font-size="16">NPU 0</text>
+            <text x="44" y="78" class="tm" font-size="11.5">96 × 96 MAC · INT8</text>
+            <text x="44" y="96" class="tm" font-size="11.5">32 MB SRAM</text>
+            <text x="44" y="152" class="tm" font-size="13" font-weight="500">36,9 TOPS</text>
+            <rect class="npu" x="270" y="30" width="220" height="140" rx="3"/>
+            <text x="284" y="56" font-weight="600" font-size="16">NPU 1</text>
+            <text x="284" y="78" class="tm" font-size="11.5">96 × 96 MAC · INT8</text>
+            <text x="284" y="96" class="tm" font-size="11.5">32 MB SRAM</text>
+            <text x="284" y="152" class="tm" font-size="13" font-weight="500">36,9 TOPS</text>
+            <rect class="cpu" x="510" y="30" width="220" height="140" rx="3"/>
+            <text x="524" y="56" font-weight="600" font-size="16">CPU</text>
+            <text x="524" y="78" class="tm" font-size="11.5">12 × Cortex-A72</text>
+            <text x="524" y="96" class="tm" font-size="11.5">3 kluster × 4 inti · 2,2 GHz</text>
+            <rect class="cpu" x="524" y="112" width="58" height="44" rx="2"/><rect class="cpu" x="591" y="112" width="58" height="44" rx="2"/><rect class="cpu" x="658" y="112" width="58" height="44" rx="2"/>
+            <rect class="oth" x="30" y="190" width="160" height="72" rx="3"/>
+            <text x="42" y="214" font-weight="600" font-size="14">GPU</text>
+            <text x="42" y="234" class="tm t2" font-size="11">Mali-G71 MP12</text>
+            <text x="42" y="250" class="tm t2" font-size="11">≈ 600 GFLOPS</text>
+            <rect class="oth" x="205" y="190" width="160" height="72" rx="3"/>
+            <text x="217" y="214" font-weight="600" font-size="14">ISP kamera</text>
+            <text x="217" y="234" class="tm t2" font-size="11">input ≈ 2,5 Gpiksel/s</text>
+            <rect class="oth" x="380" y="190" width="160" height="72" rx="3"/>
+            <text x="392" y="214" font-weight="600" font-size="14">Enkoder video</text>
+            <text x="392" y="234" class="tm t2" font-size="11">H.265</text>
+            <rect class="oth" x="555" y="190" width="175" height="72" rx="3"/>
+            <text x="567" y="214" font-weight="600" font-size="14">Sistem keselamatan</text>
+            <text x="567" y="234" class="tm t2" font-size="11">CPU lockstep · keamanan</text>
+            <rect class="oth" x="30" y="280" width="700" height="52" rx="3"/>
+            <text x="42" y="304" font-weight="600" font-size="14">Antarmuka memori</text>
+            <text x="42" y="322" class="tm t2" font-size="11">LPDDR4-4266 · 128-bit · ≈ 68 GB/s</text>
+            <text x="738" y="322" class="tm t3" font-size="10.5" text-anchor="end">Samsung 14 nm · 260 mm² · 6 miliar transistor</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h3>Hitung sendiri: dari mana angka TOPS</h3>
+        <div class="box grid2">
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+            <label class="rng" for="tN"><span>Sisi array MAC</span><output id="tNo"></output><input type="range" id="tN" min="32" max="192" step="16" value="96"></label>
+            <label class="rng" for="tF"><span>Frekuensi</span><output id="tFo"></output><input type="range" id="tF" min="0.5" max="3" step="0.1" value="2"></label>
+            <label class="rng" for="tC"><span>Jumlah NPU</span><output id="tCo"></output><input type="range" id="tC" min="1" max="4" step="1" value="2"></label>
+          </div>
+          <dl class="outs" style="border-top:0;padding-top:0;align-content:start">
+            <div><dt>Per NPU</dt><dd id="tA"></dd></div>
+            <div><dt>Per chip</dt><dd id="tB"></dd></div>
+            <div style="grid-column:1/-1"><p class="formula" id="tFm"></p></div>
+          </dl>
+        </div>
+        <p class="sub">Satu MAC = satu perkalian + satu penjumlahan = 2 operasi per siklus. Preset 96 · 2,0 GHz · 2 NPU = chip FSD asli. Komputer FSD di mobil memasang dua chip untuk redundansi (≈ 144 TOPS); Optimus Gen 1 memakai satu.</p>
+      </section>
+
+      <section class="sec">
+        <h3>Generasi chip dan pembanding</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Chip</th><th>Tahun</th><th>Proses</th><th>Komputasi</th><th>Dipakai di</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Tesla FSD (HW3)</td><td class="n">2019</td><td>Samsung 14 nm</td><td class="n">73,7 TOPS/chip</td><td>Mobil HW3, Optimus Gen 1</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Tesla AI4 (HW4)</td><td class="n">2023</td><td>Samsung kelas 7 nm</td><td>20 inti CPU, 3 NPU (teardown)</td><td>Mobil HW4; diduga Optimus Gen 2/3</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Tesla AI5</td><td class="n">± 2027</td><td>TSMC &amp; Samsung</td><td>Klaim Musk: hingga ± 40× AI4 pada beban tertentu</td><td>Optimus produksi volume (target)</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>NVIDIA Jetson AGX Thor</td><td class="n">2025</td><td>Blackwell</td><td class="n">≈ 2.070 TFLOPS FP4 (sparse), 128 GB, 40–130 W</td><td>Banyak humanoid lain</td><td><span class="cf cf-R">Resmi</span></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Chip kecil di setiap sendi</h3>
+        <div class="grid2">
+          <div class="box"><p style="margin:0 0 8px"><span class="cf cf-I">Inferensi</span></p><p style="margin:0;line-height:1.55">Setiap aktuator butuh mikrokontroler sendiri untuk loop arus FOC puluhan kHz. Tesla tidak merilis chipnya. Di industri, peran ini biasanya dipegang MCU ARM Cortex-M4/M7 atau DSP kendali motor (keluarga TI C2000, STM32G4) 150–600 MHz, yang punya timer PWM resolusi tinggi dan ADC cepat untuk sensor arus.</p></div>
+          <div class="box"><p style="margin:0 0 8px"><span class="cf cf-I">Inferensi</span></p><p style="margin:0;line-height:1.55">Pembagian kerjanya: SoC pusat memutuskan <i>apa</i> yang dilakukan (target posisi/torsi ratusan kali per detik), MCU di sendi memutuskan <i>bagaimana</i> arus mengalir (puluhan ribu kali per detik). Komputer pusat tidak pernah menyalakan transistor motor secara langsung.</p></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-os" hidden aria-label="OS dan software">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Spek OS</p>
+        <h2>Tesla tidak pernah merilis OS Optimus. <span>Ini yang bisa dipastikan dan yang hanya diduga.</span></h2>
+        <p class="lede">Tidak ada produk resmi bernama “Tesla Bot OS”. Yang resmi: Optimus memakai komputer dan pendekatan jaringan saraf yang sama dengan FSD. Komputer Autopilot di mobil menjalankan Linux (Tesla mempublikasikan sumber kernelnya), sehingga Linux di SoC Optimus adalah dugaan yang kuat, bukan fakta.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Tumpukan software, dari tugas sampai transistor</h3>
+        <div class="stack">
+          <div class="layer" style="--c:var(--accent)"><h4>Antarmuka<small>suara · teleop · aplikasi</small></h4><p>Perintah lisan dan pengendalian jarak jauh. Integrasi asisten Grok untuk percakapan disebut Musk.</p><span class="cf cf-L">Laporan</span></div>
+          <div class="layer" style="--c:var(--accent)"><h4>Kebijakan AI<small>jaringan saraf</small></h4><p>Jaringan saraf end-to-end: video kamera dan keadaan sendi masuk, target gerak keluar. Arsitekturnya diturunkan dari FSD; dilatih di klaster data center Tesla.</p><span class="cf cf-R">Resmi</span></div>
+          <div class="layer" style="--c:var(--rot)"><h4>Kontrol gerak<small>whole-body control</small></h4><p>Estimasi keadaan (IMU + kinematika + sensor kaki), keseimbangan, dan pembagian torsi ke tiap sendi. Biasanya gabungan model fisika (MPC) dan kebijakan hasil reinforcement learning.</p><span class="cf cf-I">Inferensi</span></div>
+          <div class="layer" style="--c:var(--lin)"><h4>OS di SoC<small>kernel · driver</small></h4><p>Linux, kemungkinan dengan patch real-time, seperti komputer Autopilot di mobil. Middleware dan nama sistemnya tidak dirilis.</p><span class="cf cf-L">Laporan</span></div>
+          <div class="layer" style="--c:var(--sig)"><h4>Firmware sendi<small>RTOS / bare-metal</small></h4><p>Loop FOC, pembacaan encoder, proteksi arus dan suhu di MCU tiap aktuator.</p><span class="cf cf-I">Inferensi</span></div>
+          <div class="layer" style="--c:var(--ink-3)"><h4>Perangkat keras<small>SoC · MCU · sensor</small></h4><p>Lihat tab Chip dan Elektronik.</p><span class="cf cf-R">Resmi</span></div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h3>Setiap lapisan berdetak di kecepatan berbeda</h3>
+        <p class="sub">Skala logaritmik, 1 Hz sampai 100 kHz. Semua rentang adalah angka tipikal humanoid <span class="cf cf-I">Inferensi</span>, kecuali Helix (Figure) sebagai contoh resmi dari pabrikan lain.</p>
+        <div class="box rates" id="rates"></div>
+      </section>
+
+      <section class="sec">
+        <h3>Bagaimana Optimus belajar</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Sumber data</th><th>Cara</th><th>Kelemahan</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Teleoperasi</td><td>Operator memakai setelan motion-capture dan headset VR; gerakannya direkam sebagai contoh.</td><td>Mahal dan lambat, satu operator satu robot.</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Video manusia</td><td>Model belajar dari rekaman orang mengerjakan tugas. Laporan pertengahan 2025 menyebut Tesla memindahkan fokus ke sini.</td><td>Tangan manusia dan robot berbeda bentuk; gaya tidak terekam.</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Simulasi</td><td>Kebijakan berjalan dilatih jutaan kali di simulator, lalu dipindah ke robot (sim-to-real).</td><td>Gesekan dan kontak sulit disimulasikan akurat.</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+            <tr><td>Armada</td><td>Robot yang bekerja di pabrik Tesla mengirim data balik; model baru dikirim lewat pembaruan OTA.</td><td>Butuh banyak robot yang sudah bekerja.</td><td><span class="cf cf-I">Inferensi</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="sub">Pelatihan memakai klaster GPU Tesla. Proyek superkomputer Dojo dilaporkan dihentikan Agustus 2025; Dojo tidak pernah menjadi komputer di dalam robot, berbeda dengan klaim salah satu infografis.</p>
+      </section>
+
+      <section class="sec">
+        <h3>Pembanding: software humanoid lain</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Platform</th><th>OS / runtime</th><th>Model AI</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Tesla Optimus</td><td>Tidak dirilis; Linux diduga</td><td>Jaringan saraf end-to-end turunan FSD</td><td><span class="cf cf-L">Laporan</span></td></tr>
+            <tr><td>Figure 03</td><td>In-house</td><td>Helix: “System 2” VLM 7 miliar parameter pada 7–9 Hz + “System 1” 80 juta parameter pada 200 Hz</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Unitree G1 / H1</td><td>Linux; SDK2 berbasis DDS, kompatibel ROS 2</td><td>Terbuka untuk riset pengguna</td><td><span class="cf cf-R">Resmi</span></td></tr>
+            <tr><td>Ekosistem NVIDIA</td><td>Jetson Thor + JetPack (Ubuntu), Isaac ROS</td><td>Isaac GR00T N1 (foundation model humanoid)</td><td><span class="cf cf-R">Resmi</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="sub">ROS 2 bukan sistem operasi. Ia middleware di atas Linux yang mengatur komunikasi antarproses (topik, layanan) dan banyak dipakai untuk riset humanoid.</p>
+      </section>
+    </div>
+  </section>
+
+  <section class="doc" id="v-industri" hidden aria-label="Constraint industri">
+    <div class="doc-in">
+      <header class="dh">
+        <p class="eyebrow">Constraint industri · November 2026</p>
+        <h2>Yang menahan humanoid masuk pabrik, <span>dan yang sedang dikerjakan</span></h2>
+        <p class="lede">Prototipe yang bisa berjalan sudah ada sejak 2022. Masalahnya sekarang ada di tangan, biaya aktuator, bahan magnet, baterai, data, dan standar keselamatan. Hingga akhir Oktober 2026 Tesla belum mengungkap Optimus V3 secara resmi.</p>
+      </header>
+
+      <section class="sec">
+        <h3>Garis waktu</h3>
+        <ul class="tl">
+          <li><time>Agu 2021</time><span>Konsep Tesla Bot: 173 cm, 57 kg, 40 aktuator, target 8 km/j, angkat 20 kg. <span class="cf cf-R">Resmi</span></span></li>
+          <li><time>Sep 2022</time><span>Prototipe Gen 1: 73 kg, 28 aktuator struktural, tangan 11 DOF, baterai 2,3 kWh / 52 V, Tesla SoC. <span class="cf cf-R">Resmi</span></span></li>
+          <li><time>Des 2023</time><span>Gen 2: 10 kg lebih ringan, jalan 30 % lebih cepat, leher 2 DOF, taktil di semua jari, sensor gaya/torsi kaki, jari kaki beruas. <span class="cf cf-R">Resmi</span></span></li>
+          <li><time>Okt 2024</time><span>Acara We, Robot: Optimus melayani tamu; sebagian interaksi dikendalikan operator jarak jauh. <span class="cf cf-L">Laporan</span></span></li>
+          <li><time>Apr 2025</time><span>Tiongkok membatasi ekspor magnet tanah jarang; Musk menyebut produksi Optimus terdampak. <span class="cf cf-L">Laporan</span></span></li>
+          <li><time>2025</time><span>Target ribuan unit tahun itu tidak tercapai; tangan didesain ulang. <span class="cf cf-L">Laporan</span></span></li>
+          <li><time>Jan 2026</time><span>Tesla mengumumkan lini Model S/X di Fremont dialihkan untuk produksi Optimus. <span class="cf cf-L">Laporan</span></span></li>
+          <li class="now"><time>Okt 2026</time><span>V3 belum diungkap resmi. Paten tangan 22 DOF dengan aktuator di lengan bawah sudah terbit. <span class="cf cf-L">Laporan</span></span></li>
+        </ul>
+      </section>
+
+      <section class="sec">
+        <h3>Delapan constraint utama</h3>
+        <div class="cards" id="cards"></div>
+      </section>
+
+      <section class="sec">
+        <h3>Koreksi untuk infografis yang beredar</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Klaim di infografis</th><th>Yang tercatat</th></tr></thead>
+          <tbody>
+            <tr><td>Kepala memakai LiDAR</td><td>Optimus memakai kamera saja (vision-only), sama seperti FSD.</td></tr>
+            <tr><td>Komputer inti “Dojo supercomputer”</td><td>Dojo adalah klaster pelatihan di data center, tidak pernah dipasang di robot, dan dilaporkan dihentikan Agustus 2025. Di dalam robot ada Tesla SoC.</td></tr>
+            <tr><td>Sistem operasi “Tesla Bot OS”</td><td>Tidak ada nama atau spesifikasi OS resmi.</td></tr>
+            <tr><td>Rotor Halbach array</td><td>Tidak ada sumber resmi bahwa Optimus memakai Halbach array. Itu materi pemasaran pemasok magnet.</td></tr>
+            <tr><td>Panel muka untuk ekspresi</td><td>Panel muka Gen 2 adalah kaca hitam tanpa layar ekspresi.</td></tr>
+            <tr><td>Berat 56 kg, jalan 8 km/j</td><td>Angka target konsep 2021. Gen 1 tercatat 73 kg; Gen 2 lebih ringan 10 kg. Kecepatan aktual tidak dirilis.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec">
+        <h3>Sumber</h3>
+        <ul class="src">
+          <li>Tesla AI Day 2021 (konsep) dan AI Day 2022 (30 Sep 2022): aktuator, baterai, komputer. Presentasi video Tesla.</li>
+          <li><a href="https://www.notateslaapp.com/news/1821/tesla-unveils-optimus-robot-gen-2-tesla-designed-fingertip-sensors-actuators-and-ten-other-improvements-video" target="_blank" rel="noopener">Not a Tesla App: Optimus Gen 2</a></li>
+          <li><a href="https://en.wikichip.org/wiki/tesla_(car_company)/fsd_chip" target="_blank" rel="noopener">WikiChip: Tesla FSD chip (Hot Chips 2019)</a></li>
+          <li><a href="https://github.com/teslamotors/linux" target="_blank" rel="noopener">teslamotors/linux: sumber kernel komputer Autopilot</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Optimus_(robot)" target="_blank" rel="noopener">Wikipedia: Optimus (robot)</a></li>
+          <li><a href="https://www.teslarati.com/tesla-optimus-v3-hand-arm-details-revealed-new-patents/" target="_blank" rel="noopener">Teslarati: paten tangan &amp; lengan V3</a></li>
+          <li><a href="https://humanoid.guide/linear-vs-rotary-actuators-humanoid-joints/" target="_blank" rel="noopener">Humanoid Guide: aktuator linear vs rotari</a></li>
+          <li><a href="https://www.globaltimes.cn/page/202504/1332704.shtml" target="_blank" rel="noopener">Global Times: dampak pembatasan magnet tanah jarang</a></li>
+          <li><a href="https://www.basenor.com/pages/tesla-optimus-tracker" target="_blank" rel="noopener">Basenor: pelacak status Optimus 2026</a></li>
+          <li><a href="https://www.figure.ai/news/helix" target="_blank" rel="noopener">Figure: Helix</a></li>
+          <li><a href="https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/" target="_blank" rel="noopener">NVIDIA Jetson Thor</a></li>
+        </ul>
+      </section>
+    </div>
+  </section>
+  </main>
+</div>

@@ -1,0 +1,109 @@
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><div class="rule"></div><div><h1>Anatomi <span>Optimus</span></h1><p>Humanoid · 173 cm · 2,3 kWh · 52 V · 28 + 12 aktuator</p></div></div>
+    <nav class="tabs" role="tablist" aria-label="Bagian">
+      <button class="tab" role="tab" data-tab="anatomi">Anatomi 3D</button>
+      <button class="tab" role="tab" data-tab="aktuator">Motor &amp; sendi</button>
+      <button class="tab" role="tab" data-tab="elektronik">Elektronik</button>
+      <button class="tab" role="tab" data-tab="chip">Chip</button>
+      <button class="tab" role="tab" data-tab="os">OS &amp; software</button>
+      <button class="tab" role="tab" data-tab="industri">Constraint industri</button>
+    </nav>
+    <p class="disc">Materi edukasi tidak resmi · status per Nov 2026</p>
+  </header>
+
+  <main>
+  <section class="anat" id="v-anatomi" aria-label="Anatomi 3D">
+    <div id="stage">
+      <svg id="leaders" aria-hidden="true"></svg>
+      <div id="tags"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i style="--c:var(--rot)"></i>Rotari</span>
+        <span><i style="--c:var(--lin)"></i>Linear</span>
+        <span><i style="--c:var(--fin)"></i>Jari</span>
+        <span><i style="--c:var(--sen)"></i>Sensor</span>
+        <span><i style="--c:var(--pwr)"></i>Daya 52 V</span>
+        <span><i class="dash" style="--c:var(--sig)"></i>Data</span>
+      </div>
+      <div id="loader"><span id="loaderTxt">Memuat model robot</span><b><i id="loaderBar"></i></b></div>
+    </div>
+
+    <aside class="col col-left">
+      <section class="card readout" aria-label="Telemetri simulasi">
+        <div class="chips" id="acts">
+          <button class="chip acc" data-act="diam">Duduk</button>
+          <button class="chip acc" data-act="berdiri">Berdiri</button>
+          <button class="chip acc" data-act="jalan">Jalan</button>
+          <button class="chip acc" data-act="angkat">Angkat 20 kg</button>
+          <button class="chip acc" data-act="telur">Pegang telur</button>
+        </div>
+        <div class="big" id="bigP">0<small>W</small></div>
+        <canvas id="spark" aria-label="Riwayat daya 30 detik"></canvas>
+        <p class="eyebrow plabel"><span id="pLabel">Daya total</span><span class="mono" id="pConf"></span></p>
+        <dl class="stats">
+          <div><dt>Baterai</dt><dd><b id="sSoc">0</b> %</dd></div>
+          <div><dt>Sisa</dt><dd><b id="sRem">0</b> jam</dd></div>
+          <div><dt>Arus</dt><dd><b id="sI">0</b> A</dd></div>
+          <div><dt>Tegangan</dt><dd><b id="sV">0</b> V</dd></div>
+          <div><dt>Torsi lutut</dt><dd><b id="sTk">0</b> Nm</dd></div>
+          <div><dt>Suhu lutut</dt><dd><b id="sTt">0</b> °C</dd></div>
+        </dl>
+      </section>
+      <nav class="card parts" id="parts" aria-label="Komponen dari kepala sampai kaki"></nav>
+    </aside>
+
+    <aside class="col col-right">
+      <article class="card detail" id="detail" aria-live="polite">
+        <div class="d-top"><p class="eyebrow" id="dGrp"></p><span class="dom" id="dDom"></span></div>
+        <h2 id="dName"></h2>
+        <p class="d-en" id="dEn"></p>
+        <p class="d-role" id="dRole"></p>
+        <div class="chart">
+          <div class="chart-head"><p class="eyebrow" id="cTitle"></p><span class="mono" id="cMeta"></span></div>
+          <canvas id="chart"></canvas>
+          <p class="cap" id="cCap"></p>
+        </div>
+        <h3 class="eyebrow">Cara kerja</h3>
+        <ol class="steps" id="dSteps"></ol>
+        <h3 class="eyebrow">Spesifikasi &amp; elektronik</h3>
+        <dl class="specs" id="dSpecs"></dl>
+        <h3 class="eyebrow">Constraint industri</h3>
+        <div class="ind" id="dInd"></div>
+        <h3 class="eyebrow">Terhubung ke</h3>
+        <div class="links" id="dLinks"></div>
+        <p class="keyline"><span class="cf cf-R">Resmi</span> materi Tesla <span class="cf cf-L">Laporan</span> paten, pernyataan, analisis <span class="cf cf-I">Inferensi</span> praktik industri</p>
+      </article>
+      <section class="card view" aria-label="Tampilan">
+        <p class="eyebrow">Kamera</p>
+        <div class="chips" id="cams">
+          <button class="chip" data-cam="depan">Depan</button>
+          <button class="chip" data-cam="tiga">3/4</button>
+          <button class="chip" data-cam="samping">Samping</button>
+          <button class="chip" data-cam="belakang">Belakang</button>
+          <button class="chip" data-cam="fokus">Fokus</button>
+        </div>
+        <p class="eyebrow">Cangkang</p>
+        <div class="chips" id="shells">
+          <button class="chip" data-shell="solid">Solid</button>
+          <button class="chip" data-shell="xray">X-ray</button>
+          <button class="chip" data-shell="off">Tanpa</button>
+        </div>
+        <p class="eyebrow">Overlay</p>
+        <div class="chips" id="ovl">
+          <button class="chip acc" data-ov="labels">Label</button>
+          <button class="chip acc" data-ov="power">Daya</button>
+          <button class="chip acc" data-ov="data">Data</button>
+          <button class="chip acc" data-ov="isolate">Isolasi</button>
+        </div>
+      </section>
+      <p class="credit">Model 3D: <a href="https://sketchfab.com/3d-models/tesla-bot-7664b167d89c4e1aa6ea101b11fc8118" target="_blank" rel="noopener">“Tesla Bot”</a> oleh <a href="https://sketchfab.com/amalmurali347" target="_blank" rel="noopener">amalmurali347</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, diskalakan ke 173 cm. Bentuknya mengikuti konsep 2021; komponen internal dibuat prosedural dan posisinya ilustratif. Bukan materi resmi Tesla.</p>
+    </aside>
+
+    <section class="flowbar" aria-label="Rantai kendali">
+      <p class="fhead">Rantai kendali <em>· klik tahap · angka = tipikal industri</em></p>
+      <div class="chain" id="chain"></div>
+      <p id="chainCap"></p>
+      <p class="hint">Seret untuk memutar · gulir untuk zoom · klik komponen · H sembunyikan panel</p>
+    </section>
+  </section>
