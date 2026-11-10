@@ -1,15 +1,16 @@
-"""Pecah model/tesla_bot.glb menjadi:
+"""Pecah GLB model Tesla Bot (default model/tesla_bot_rigged.glb) menjadi:
   - tesla_bot_geo.txt : GLB berisi geometri saja, di-encode base64
   - tesla_tex0..2.png : tekstur sebagai file terpisah
 
 Alasan: Claude Artifact tidak menyajikan file .glb, jadi geometri dikirim sebagai teks
 lalu di-decode di browser (GLTFLoader.parse). Untuk hosting biasa cara ini juga jalan.
 
-Pakai:  python3 tools/split_glb.py   (dijalankan dari root repo)
+Pakai:  python3 tools/split_glb.py [file.glb]   (dijalankan dari root repo)
+Model ber-rig dibuat oleh tools/rig_tesla_bot.py dari model/tesla_bot.glb.
 """
-import base64, json, struct
+import base64, json, struct, sys
 
-SRC = 'model/tesla_bot.glb'
+SRC = sys.argv[1] if len(sys.argv) > 1 else 'model/tesla_bot_rigged.glb'
 b = open(SRC, 'rb').read()
 cl, _ = struct.unpack('<I4s', b[12:20])
 j = json.loads(b[20:20 + cl])

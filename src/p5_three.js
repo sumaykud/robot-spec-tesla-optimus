@@ -65,7 +65,7 @@ function linear(part, a, b, r, phase = 0) {
   const rod = new THREE.Mesh(new THREE.CylinderGeometry(r * .42, r * .42, 1, 12), regMat('ink-2', { metalness: .8, roughness: .3 }));
   const tip = new THREE.Mesh(new THREE.SphereGeometry(r * .62, 14, 10), regMat('lin'));
   g.add(body, band, rod, tip); root.add(g);
-  reg(part, body, band, rod, tip); RODS.push({ rod, tip, mL, span: L - mL, part, phase });
+  reg(part, body, band, rod, tip); RODS.push({ g, a: A.clone(), b: B.clone(), rod, tip, mL, span: L - mL, part, phase });
 }
 function pin(part, pos, axis, r, len) {
   const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 16), regMat('metal'));
@@ -219,8 +219,10 @@ async function init3D() {
     const bin = Uint8Array.from(atob((await res.text()).trim()), ch => ch.charCodeAt(0));
     $('#loaderBar').style.width = '70%';
     const gltf = await new Promise((ok, no) => new GLTFLoader().parse(bin.buffer, './', ok, no));
-    gltf.scene.traverse(o => { if (o.isMesh) shellMesh = o; });
+    gltf.scene.traverse(o => { if (o.isSkinnedMesh || (!shellMesh && o.isMesh)) shellMesh = o; });
+    shellMesh.frustumCulled = false; // bounding box rest tidak berlaku saat duduk/jongkok
     root.add(gltf.scene);
+    initRig(gltf);
     shellMats.solid = shellMesh.material;
     shellMats.xray = new THREE.MeshStandardMaterial({ color: isDark() ? '#9aa6b5' : '#ffffff', map: shellMats.solid.map, transparent: true, opacity: .16, depthWrite: false, metalness: .1, roughness: .35, side: THREE.FrontSide });
     shellMesh.renderOrder = 2;
@@ -370,6 +372,7 @@ function layoutTags() {
 const tmpC = () => new THREE.Color();
 function anim3D(dt, now) {
   if (!ready3D) return;
+  animRig(dt);
   const A = ACT[S.act], t = S.t, mot = REDUCED ? 0 : 1;
   for (const r of ROT) {
     const ld = A.load[r.part] ?? .1;
@@ -378,7 +381,8 @@ function anim3D(dt, now) {
   for (const r of RODS) {
     const ld = A.load[r.part] ?? .1, amp = .22 * Math.max(A.motion, .08) * (0.4 + ld);
     const s = mot ? Math.sin(TAU * (S.act === 'jalan' ? S.phase : t * .25) + r.phase) : 0;
-    const ext = r.span * clamp(0.55 + amp * s, 0.15, 0.95);
+    // dengan rig: panjang batang = jarak antar ujung pada pose; denyut kecil hanya bila kedua ujung di tulang yang sama
+    const ext = r.extRig != null ? Math.max(.01, r.extRig) : r.span * clamp(0.55 + amp * s, 0.15, 0.95);
     const len = r.mL * .5 + ext;
     r.rod.scale.y = len; r.rod.position.y = r.mL * .5 + len / 2; r.tip.position.y = r.mL + ext;
   }
