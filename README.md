@@ -1,3 +1,5 @@
+![Cover Robot](Cover%20Robot.png)
+
 # robot-spec-tesla-optimus
 Belajar spec robot, ini tidak akurat tapi bisa membantu memahami Robot
 
