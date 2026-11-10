@@ -106,6 +106,7 @@ function showTab(tab) {
   for (const t of TABS) $('#v-' + t).hidden = t !== tab;
   $$('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
   if (tab === 'anatomi') requestAnimationFrame(() => { resize3D(); });
+  if (tab === 'aktuator') initLab3D();
   else { $('#v-' + tab).scrollTop = 0; if (!isDesk()) scrollTo(0, 0); }
 }
 function route() {
@@ -132,6 +133,8 @@ function setLab(f) {
   [t.min, t.max, t.step, t.value] = [L.T[1], L.T[2], L.T[3], L.T[4]]; $('#lTl').textContent = L.T[0];
   [r.min, r.max, r.step, r.value] = [L.R[1], L.R[2], L.R[3], L.R[4]]; $('#lRl').textContent = L.R[0];
   $('#labSteps').innerHTML = L.steps.map(s => `<li><span>${s}</span></li>`).join('');
+  syncLabView();
+  if (S.tab === 'aktuator') initLab3D();
   updLab();
 }
 function labVals() { return { T: +$('#lT').value, rpm: +$('#lS').value, R: +$('#lR').value }; }
@@ -145,8 +148,11 @@ function updLab() {
   $('#oC').innerHTML = `${fmt(Pw)}<small>W</small>`; $('#oD').innerHTML = `${fmt(L.eta * 100)}<small>%</small>`;
   $('#lF').textContent = F;
 }
+let labDt = 0;
 function drawLab(t) {
-  const [c, w, h] = fitCv($('#labCv')), v = labVals();
+  const v = labVals();
+  if (L3.M[labFam]?.st === 'ready' && L3.st === 'ready') return drawLab3D(labDt, v);
+  const [c, w, h] = fitCv($('#labCv'));
   if (labFam === 'rotary') drawRotary(c, w, h, t, { T: v.T, rpm: v.rpm, N: v.R, eta: .75, big: true, spd: v.rpm / 1800 });
   else if (labFam === 'linear') drawLinear(c, w, h, t, { T: v.T, lead: v.R, rpm: v.rpm, eta: .85, big: true, spd: .6 + v.rpm / 6000 });
   else drawHand(c, w, h, t, { T: v.T, N: v.R, big: true, spd: .5 + v.rpm / 4000 });
@@ -195,7 +201,7 @@ function frame(now) {
     const k = Math.floor(now / 380) % CHAIN.length;
     $$('#chain .node').forEach((b, i) => b.classList.toggle('pulse', !REDUCED && i === k));
   } else if (S.tab === 'aktuator') {
-    drawLab(vizT);
+    labDt = dt; drawLab(vizT);
     const [c, w, h] = fitCv($('#focCv')); drawFOC(c, w, h, vizT);
   }
   requestAnimationFrame(frame);
@@ -213,6 +219,7 @@ function boot() {
   $$('#ovl .chip').forEach(b => b.addEventListener('click', () => { const k = b.dataset.ov; S.ov[k] = !S.ov[k]; b.setAttribute('aria-pressed', S.ov[k]); }));
   $$('.tab').forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); setHash(b.dataset.tab); }));
   $$('#labFam .chip').forEach(b => b.addEventListener('click', () => setLab(b.dataset.fam)));
+  $$('#labMode .chip').forEach(b => b.addEventListener('click', () => setLabMode(b.dataset.m)));
   ['#lT', '#lS', '#lR'].forEach(s => $(s).addEventListener('input', updLab));
   setLab('rotary');
   select(S.sel, false);

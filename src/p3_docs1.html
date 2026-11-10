@@ -15,7 +15,19 @@
           <button class="chip acc" data-fam="finger">Jari · worm + tendon</button>
         </div>
         <div class="box lab" style="padding:0">
-          <canvas id="labCv" aria-label="Animasi aktuator"></canvas>
+          <div class="labv" id="labV">
+            <canvas id="labCv" aria-label="Animasi aktuator"></canvas>
+            <canvas id="labGl" hidden aria-label="Model 3D aktuator: motor PMSM dan mekanisme reduksinya"></canvas>
+            <div class="labtags" id="labTags" hidden aria-hidden="true"></div>
+            <div class="labtags labnotes" id="labNotes" hidden aria-hidden="true"></div>
+            <div class="labcap" id="labCap" hidden aria-live="polite"></div>
+            <div class="chips labmode" id="labMode" role="group" aria-label="Tampilan model">
+              <button class="chip" data-m="rakit">Rakit</button>
+              <button class="chip" data-m="urai">Urai</button>
+              <button class="chip" data-m="potong">Potong</button>
+            </div>
+            <p class="labhint" id="labHint"></p>
+          </div>
           <div class="ctl">
             <label class="rng" for="lT"><span id="lTl">Torsi motor</span><output id="lTo"></output><input type="range" id="lT"></label>
             <label class="rng" for="lS"><span>Kecepatan motor</span><output id="lSo"></output><input type="range" id="lS" min="500" max="6000" step="100" value="3000"></label>
