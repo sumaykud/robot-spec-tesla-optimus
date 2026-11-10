@@ -100,6 +100,52 @@ const L3_DEF = {
         <p>≈ ${fmt(F / 9.81)} kgf · kecepatan ${fmt(v.rpm / 60 * L)} mm/s</p>`;
     },
   },
+  finger: {
+    // tools/build_finger.py: panjang jari searah sumbu model, sisi telapak = bawah layar. Mode potong tidak berguna di sini.
+    file: 'actuator_finger_geo.txt', mid: -.004, tgt: [0, -.022], mode: 'rakit', modes: ['rakit', 'urai'], tint: {},
+    order: ['palm', 'motor', 'worm', 'wheel', 'phalanx_1', 'egg'],
+    name: { palm: 'Rangka telapak', motor: 'Motor mini', worm: 'Ulir cacing (worm)', wheel: 'Roda gigi + puli tendon', phalanx_1: 'Jari 3 ruas + sensor taktil', egg: 'Telur' },
+    ex: { palm: [0, 0], motor: [-.04, 0], worm: [-.02, .03], wheel: [.005, -.035], phalanx_1: [.035, .02], egg: [.085, .012] },
+    tag: { palm: [1, 1.15], motor: [-1, .5], worm: [-1, .5], wheel: [1, .5], phalanx_1: [-1, .55], egg: [1, .7] },
+    notes: [['worm', 0, 'Motor + worm', -1, .6], ['wheel', 0, 'Roda gigi + puli tendon', 1, .55], ['phalanx_1', 0, 'Tendon menekuk 3 ruas', -1, .9], ['egg', 0, 'Sensor taktil di ujung jari', 1, 1.15]],
+    pose: { rakit: [.015, .02, .27], urai: [.02, .02, .42] }, exT: [.03, .012],
+    setup(m) {
+      m.t = 0; m.touch = false;
+      const R = m.root;
+      m.ph = ['phalanx_1', 'phalanx_2', 'phalanx_3'].map(n => R.getObjectByName(n));
+      m.tp = [...Array(7)].map((_, i) => R.getObjectByName('tendon_' + i)).filter(Boolean);
+      m.pad = R.getObjectByName('tip_sensor');
+      m.base = { ph: m.ph.map(o => o.rotation.z), worm: m.parts.worm?.o.rotation.y ?? 0, wheel: m.parts.wheel?.o.rotation.z ?? 0 };
+      m.tMat = new THREE.MeshStandardMaterial({ color: C.fin, emissive: C.fin, emissiveIntensity: .35, roughness: .5 });
+      m.tendon = new THREE.Mesh(new THREE.BufferGeometry(), m.tMat); m.center.add(m.tendon);
+    },
+    animate(m, dt, v) {
+      // sama dengan animasi 2D: tekuk naik-turun; di 0,82 ujung jari menyentuh telur -> berhenti, worm terkunci
+      if (!REDUCED) m.t += dt * (.5 + v.rpm / 4000);
+      const raw = .5 - .5 * Math.cos(m.t), flex = Math.min(raw, .82);
+      m.touch = raw > .8;
+      const KS = [.9, 1.1, .8];
+      m.ph.forEach((o, i) => { if (o) o.rotation.z = m.base.ph[i] - flex * KS[i]; });
+      const wa = flex * 2.2;                                   // roda + puli menggulung tendon
+      if (m.parts.wheel) m.parts.wheel.o.rotation.z = m.base.wheel + wa;
+      if (m.parts.worm) m.parts.worm.o.rotation.y = m.base.worm + wa * v.R * .25; // worm berputar N kali lebih cepat (diperlambat ¼)
+      if (m.pad) { m.pad.traverse(o => { if (o.isMesh) { o.material.emissive.set(C.sen); o.material.emissiveIntensity = m.touch ? .9 : 0; } }); }
+      // tendon: tabung tipis lewat titik-titik pemandu (ikut ruas jari)
+      if (m.tp.length > 1) {
+        const path = new THREE.CurvePath(), q = m.tp.map(o => m.center.worldToLocal(o.getWorldPosition(new THREE.Vector3())));
+        for (let i = 1; i < q.length; i++) path.add(new THREE.LineCurve3(q[i - 1], q[i]));
+        m.tendon.geometry.dispose();
+        m.tendon.geometry = new THREE.TubeGeometry(path, 48, .0007, 6, false);
+      }
+    },
+    cap(v, m) {
+      const T = v.T / 1000, N = v.R, eta = LAB.finger.eta, Ft = T * N * eta / .005;
+      return `<p class="t${m.touch ? ' on' : ''}">${m.touch ? 'Taktil: tekanan terdeteksi · berhenti' : 'Jari menekuk'}</p>
+        <p class="f">tendon ≈ ${fmt(Ft)} N</p>
+        <p class="f">ujung jari ≈ ${fmt(Ft * .16, 1)} N</p>
+        <p class="g">worm η ≈ ${fmt(eta * 100)} % → terkunci</p>`;
+    },
+  },
 };
 
 async function initLab3D() {
@@ -182,7 +228,7 @@ function syncLabView() {
   $('#labHint').hidden = !D;
   $('#labHint').textContent = failed ? 'Model 3D gagal dimuat; memakai animasi 2D.' : on ? L3_HINT : 'Memuat model 3D…';
   $('#labV').classList.toggle('is3d', !!D);
-  $$('#labMode .chip').forEach(b => b.setAttribute('aria-pressed', !!m && b.dataset.m === m.mode));
+  $$('#labMode .chip').forEach(b => { b.setAttribute('aria-pressed', !!m && b.dataset.m === m.mode); b.hidden = !!D?.modes && !D.modes.includes(b.dataset.m); });
   if (!on || L3.fam === labFam) return;
   // ganti model aktif: tampilkan root-nya, bangun ulang label
   for (const k in L3.M) if (L3.M[k].root) L3.M[k].root.visible = k === labFam;
@@ -214,7 +260,7 @@ function drawLab3D(dt, v) {
   const k = 1 - Math.exp(-dt * 5);
   m.ex += ((m.mode === 'urai' ? 1 : 0) - m.ex) * k; m.cut += ((m.mode === 'potong' ? 1 : 0) - m.cut) * k;
   // kamera: ikuti pose mode sampai pengguna menyeret
-  const tx = m.ex * D.exT[0], ty = m.ex * D.exT[1], nar = Math.max(1, 1.8 / (w / h)); // kanvas sempit: kamera mundur sebanding
+  const [bx, by] = D.tgt || [0, 0], tx = bx + m.ex * D.exT[0], ty = by + m.ex * D.exT[1], nar = Math.max(1, 1.8 / (w / h)); // kanvas sempit: kamera mundur sebanding
   if (!m.drag) {
     const P = D.pose[m.mode];
     L3c.position.lerp(l3vec(tx + P[0] * nar, ty + P[1] * nar, P[2] * nar), k);
@@ -235,7 +281,7 @@ function drawLab3D(dt, v) {
   $('#labTags').style.opacity = sTag; $('#labNotes').style.opacity = sNote;
   if (sTag) for (const [n, d] of m.tags) { const [up, tier] = D.tag[n]; l3place(d, m, n, m.parts[n].mid, up, tier, w, h); }
   if (sNote) for (const [[n, y, , up, tier = 1], d] of m.notes) l3place(d, m, n, y || m.parts[n].mid, up, tier, w, h);
-  const key = labFam + v.T + '|' + v.rpm + '|' + v.R;
-  if (m.capKey !== key) { m.capKey = key; $('#labCap').innerHTML = D.cap(v); }
+  const key = labFam + v.T + '|' + v.rpm + '|' + v.R + '|' + !!m.touch;
+  if (m.capKey !== key) { m.capKey = key; $('#labCap').innerHTML = D.cap(v, m); }
 }
 function l3vec(x, y, z) { return (l3vec.v ??= new THREE.Vector3()).set(x, y, z); }

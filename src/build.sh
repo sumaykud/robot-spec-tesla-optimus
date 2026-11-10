@@ -8,7 +8,7 @@ body() {
   cat p2_anat.html p3_docs1.html p3_docs2.html
   echo "$IMPORTMAP"
   echo '<script type="module">'
-  cat p4_data.js p5_three.js p6_viz.js p65_lab3d.js p7_ui.js
+  cat p4_data.js p5_three.js p55_rig.js p6_viz.js p65_lab3d.js p7_ui.js
   echo '</script>'
 }
 {
